@@ -15,14 +15,14 @@ public class Cancion {
     private int duracion;
     private String genero;
     private Artista artista;
-    private String album;
+    private Album album;
     private int popularidad; // (0-100) 
     private int numeroReproducciones;
 
     public Cancion() {
     }
 
-    public Cancion(String titulo, int duracion, String genero, Artista artista, String album, int popularidad) {
+    public Cancion(String titulo, int duracion, String genero, Artista artista, Album album, int popularidad) {
         this.id = 0;
         this.titulo = titulo;
         this.duracion = duracion;
@@ -33,7 +33,7 @@ public class Cancion {
         this.numeroReproducciones = 0;
     }
 
-    public Cancion(int id, String titulo, int duracion, String genero, Artista artista, String album, int popularidad, int numeroReproducciones) {
+    public Cancion(int id, String titulo, int duracion, String genero, Artista artista, Album album, int popularidad, int numeroReproducciones) {
         this.id = id;
         this.titulo = titulo;
         this.duracion = duracion;
@@ -84,11 +84,11 @@ public class Cancion {
         this.artista = artista;
     }
 
-    public String getAlbum() {
+    public Album getAlbum() {
         return album;
     }
 
-    public void setAlbum(String album) {
+    public void setAlbum(Album album) {
         this.album = album;
     }
 
