@@ -10,7 +10,6 @@ import java.util.List;
 
 /**
  * Controlador para Usuario - Maneja SOLO la lógica de control y estado
- * NO realiza operaciones CRUD (eso lo harán los árboles AVL)
  */
 public class CLLUsuario {
     // Singleton
@@ -44,7 +43,7 @@ public class CLLUsuario {
         this.listaUsuarios.clear();
     }
     
-    // GESTIÓN DE LISTAS (para resultados temporales)
+    // ===== GESTIÓN DE LISTAS (para resultados temporales) =====
     
     public void agregarALista(Usuario usuario) {
         if (!listaUsuarios.contains(usuario)) {
