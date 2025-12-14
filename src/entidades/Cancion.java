@@ -14,6 +14,8 @@ public class Cancion {
     private String titulo;
     private int duracion;
     private String genero;
+    private boolean activa;
+    private String urlAudio;
     private Artista artista;
     private Album album;
     private int popularidad; // (0-100) 
@@ -22,11 +24,13 @@ public class Cancion {
     public Cancion() {
     }
 
-    public Cancion(String titulo, int duracion, String genero, Artista artista, Album album, int popularidad) {
+    public Cancion(String titulo, int duracion, String genero, Artista artista, Album album, int popularidad,String urlAudio,boolean activa) {
         this.id = 0;
         this.titulo = titulo;
         this.duracion = duracion;
         this.genero = genero;
+        this.urlAudio=urlAudio;
+        this.activa=activa;
         this.artista = artista;
         this.album = album;
         this.popularidad = popularidad;
@@ -107,6 +111,24 @@ public class Cancion {
     public void setNumeroReproducciones(int numeroReproducciones) {
         this.numeroReproducciones = numeroReproducciones;
     }
+
+    public String getUrlAudio() {
+        return urlAudio;
+    }
+
+    public void setUrlAudio(String urlAudio) {
+        this.urlAudio = urlAudio;
+    }
+
+    public boolean isActiva() {
+        return activa;
+    }
+
+    public void setActiva(boolean activa) {
+        this.activa = activa;
+    }
+    
+    
     
     public void incrementarReproducciones() {
         this.numeroReproducciones++;
