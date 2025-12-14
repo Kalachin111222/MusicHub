@@ -37,4 +37,38 @@ public class HistorialReproduccion {
     public boolean esNuevo() {
         return id == 0;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public Cancion getCancion() {
+        return cancion;
+    }
+
+    public void setCancion(Cancion cancion) {
+        this.cancion = cancion;
+    }
+
+    public LocalDateTime getFechaReproduccion() {
+        return fechaReproduccion;
+    }
+
+    public void setFechaReproduccion(LocalDateTime fechaReproduccion) {
+        this.fechaReproduccion = fechaReproduccion;
+    }
+    
+    
 }
