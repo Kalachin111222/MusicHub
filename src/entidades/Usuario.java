@@ -17,13 +17,13 @@ public class Usuario {
     private String email;
     private String contraseña;
     private LocalDate fechaRegistro;
-    private String fechaDeNacimiento;
+    private LocalDate fechaDeNacimiento;
     private String genero;
 
     public Usuario() {
     }
 
-    public Usuario(String nombre, String email, String contraseña, LocalDate fechaRegistro,String fechaDeNacimiento, String genero) {
+    public Usuario(String nombre, String email, String contraseña, LocalDate fechaRegistro,LocalDate fechaDeNacimiento, String genero) {
         this.id = 0;
         this.nombre = nombre;
         this.email = email;
@@ -34,7 +34,7 @@ public class Usuario {
 
     }
 
-    public Usuario(int id, String nombre, String email, String contraseña, LocalDate fechaRegistro, String fechaDeNacimiento,String genero) {
+    public Usuario(int id, String nombre, String email, String contraseña, LocalDate fechaDeNacimiento,String genero) {
         this.id = id;
         this.nombre = nombre;
         this.email = email;
@@ -84,11 +84,11 @@ public class Usuario {
         this.fechaRegistro = fechaRegistro;
     }
 
-    public String getFechaDeNacimiento() {
+    public LocalDate getFechaDeNacimiento() {
         return fechaDeNacimiento;
     }
 
-    public void setFechaDeNacimiento(String fechadDeNacimiento) {
+    public void setFechaDeNacimiento(LocalDate fechadDeNacimiento) {
         this.fechaDeNacimiento = fechadDeNacimiento;
     }
 
