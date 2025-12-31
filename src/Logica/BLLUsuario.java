@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package logica;
 
 import listasDinamicas.CLLUsuario;
@@ -9,42 +5,37 @@ import Datos.DALUsuario;
 import entidades.Usuario;
 import javax.swing.JOptionPane;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.regex.Pattern;
 
-/**
- */
 public class BLLUsuario {
     
-    
-    public static boolean procesarRegistro(String nombre, String email, String password) {
-        // 1. Validar datos
-        if (!validarDatosRegistro(nombre, email, password, password)) {
+    public static boolean procesarRegistro(String nombre, String email, String password, 
+                                          String confirmarPassword, String fechaNacimiento, 
+                                          String genero) {
+        if (!validarDatosRegistro(nombre, email, password, confirmarPassword, 
+                                  fechaNacimiento, genero)) {
             return false;
         }
-        
-        // 2. Verificar si el email ya existe
         if (DALUsuario.existeEmail(email.trim())) {
             mostrarError("El email ya está registrado.");
             return false;
         }
-        
-        // 3. Crear usuario
         Usuario nuevoUsuario = new Usuario(
             nombre.trim(),
             email.trim().toLowerCase(),
             password,
-            LocalDate.now()
+            LocalDate.now(),
+            fechaNacimiento.trim(),
+            genero.trim()
         );
-        
-        // 4. Insertar en BD
         String mensaje = DALUsuario.insertarUsuario(nuevoUsuario);
         
         if (mensaje != null) {
             mostrarError("Error al registrar: " + mensaje);
             return false;
         }
-        
-        // 5. Obtener el usuario registrado con su ID
         Usuario usuarioRegistrado = DALUsuario.obtenerUsuarioPorEmail(email.trim());
         if (usuarioRegistrado != null) {
             CLLUsuario.getInstancia().setUsuario(usuarioRegistrado);
@@ -54,57 +45,47 @@ public class BLLUsuario {
         return true;
     }
     
-    
     public static Usuario procesarLogin(String email, String password) {
-        // 1. Validar datos
         if (!validarDatosLogin(email, password)) {
             return null;
         }
-        
-        // 2. Buscar usuario por email
         Usuario usuario = DALUsuario.obtenerUsuarioPorEmail(email.trim());
         
         if (usuario == null) {
             mostrarError("Email no registrado.");
             return null;
         }
-        
-        // 3. Verificar contraseña
         if (!usuario.getContraseña().equals(password)) {
             mostrarError("Contraseña incorrecta.");
             return null;
         }
-        
-        // 4. Establecer sesión
         CLLUsuario.getInstancia().setUsuario(usuario);
         
         return usuario;
     }
         
-    public static boolean actualizarPerfil(String nombre, String email) {
+    public static boolean actualizarPerfil(String nombre, String email, 
+                                          String fechaNacimiento, String genero) {
         Usuario usuarioActual = CLLUsuario.getInstancia().getUsuario();
         
         if (usuarioActual == null) {
             mostrarError("No hay usuario en sesión.");
             return false;
         }
-        
-        // 1. Validar datos
-        if (!validarNombre(nombre) || !validarEmail(email)) {
+        if (!validarNombre(nombre) || !validarEmail(email) || 
+            !validarFechaNacimiento(fechaNacimiento) || !validarGenero(genero)) {
             return false;
         }
-        
-        // 2. Verificar si el email ya existe (excepto el actual)
         if (!email.trim().equalsIgnoreCase(usuarioActual.getEmail())) {
             if (DALUsuario.existeEmail(email.trim())) {
                 mostrarError("El email ya está en uso.");
                 return false;
             }
         }
-        
-        // 3. Actualizar datos
         usuarioActual.setNombre(nombre.trim());
         usuarioActual.setEmail(email.trim().toLowerCase());
+        usuarioActual.setFechaDeNacimiento(fechaNacimiento.trim());
+        usuarioActual.setGenero(genero.trim());
         
         String mensaje = DALUsuario.actualizarUsuario(usuarioActual);
         
@@ -112,8 +93,6 @@ public class BLLUsuario {
             mostrarError("Error al actualizar: " + mensaje);
             return false;
         }
-        
-        // 4. Actualizar en CLL
         CLLUsuario.getInstancia().setUsuario(usuarioActual);
         
         mostrarExito("Perfil actualizado exitosamente.");
@@ -128,31 +107,21 @@ public class BLLUsuario {
             mostrarError("No hay usuario en sesión.");
             return false;
         }
-        
-        // 1. Verificar contraseña actual
         if (!usuarioActual.getContraseña().equals(contraseñaActual)) {
             mostrarError("La contraseña actual es incorrecta.");
             return false;
         }
-        
-        // 2. Validar nueva contraseña
         if (!validarContraseña(nuevaContraseña)) {
             return false;
         }
-        
-        // 3. Verificar confirmación
         if (!nuevaContraseña.equals(confirmarNuevaContraseña)) {
             mostrarError("Las contraseñas nuevas no coinciden.");
             return false;
         }
-        
-        // 4. Verificar que sea diferente
         if (contraseñaActual.equals(nuevaContraseña)) {
             mostrarError("La nueva contraseña debe ser diferente.");
             return false;
         }
-        
-        // 5. Actualizar contraseña
         usuarioActual.setContraseña(nuevaContraseña);
         
         String mensaje = DALUsuario.actualizarUsuario(usuarioActual);
@@ -173,8 +142,6 @@ public class BLLUsuario {
             mostrarError("No hay usuario en sesión.");
             return false;
         }
-        
-        // Confirmar eliminación
         int confirmacion = JOptionPane.showConfirmDialog(
             null,
             "¿Está seguro de eliminar su cuenta?\nEsta acción no se puede deshacer.",
@@ -193,8 +160,6 @@ public class BLLUsuario {
             mostrarError("Error al eliminar cuenta: " + mensaje);
             return false;
         }
-        
-        // Cerrar sesión
         cerrarSesion();
         
         mostrarExito("Cuenta eliminada exitosamente.");
@@ -202,7 +167,8 @@ public class BLLUsuario {
     }
         
     private static boolean validarDatosRegistro(String nombre, String email, 
-                                               String password, String confirmarPassword) {
+                                               String password, String confirmarPassword,
+                                               String fechaNacimiento, String genero) {
         if (!validarNombre(nombre)) {
             return false;
         }
@@ -217,6 +183,14 @@ public class BLLUsuario {
         
         if (!password.equals(confirmarPassword)) {
             mostrarError("Las contraseñas no coinciden.");
+            return false;
+        }
+        
+        if (!validarFechaNacimiento(fechaNacimiento)) {
+            return false;
+        }
+        
+        if (!validarGenero(genero)) {
             return false;
         }
         
@@ -309,6 +283,64 @@ public class BLLUsuario {
         
         if (!password.matches(".*[A-Za-z].*") || !password.matches(".*[0-9].*")) {
             mostrarError("La contraseña debe contener al menos una letra y un número.");
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private static boolean validarFechaNacimiento(String fechaNacimiento) {
+        if (fechaNacimiento == null || fechaNacimiento.trim().isEmpty()) {
+            mostrarError("La fecha de nacimiento no puede estar vacía.");
+            return false;
+        }
+        
+        // Validar formato de fecha (yyyy-MM-dd)
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate fecha = LocalDate.parse(fechaNacimiento.trim(), formatter);
+            
+            // Verificar que la fecha no sea futura
+            if (fecha.isAfter(LocalDate.now())) {
+                mostrarError("La fecha de nacimiento no puede ser futura.");
+                return false;
+            }
+            
+            // Verificar edad mínima (por ejemplo, 13 años)
+            LocalDate fechaMinima = LocalDate.now().minusYears(13);
+            if (fecha.isAfter(fechaMinima)) {
+                mostrarError("Debes tener al menos 13 años para registrarte.");
+                return false;
+            }
+            
+            // Verificar edad máxima razonable (por ejemplo, 120 años)
+            LocalDate fechaMaxima = LocalDate.now().minusYears(120);
+            if (fecha.isBefore(fechaMaxima)) {
+                mostrarError("La fecha de nacimiento no es válida.");
+                return false;
+            }
+            
+        } catch (DateTimeParseException e) {
+            mostrarError("Formato de fecha inválido. Use yyyy-MM-dd (ej: 2000-01-15).");
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private static boolean validarGenero(String genero) {
+        if (genero == null || genero.trim().isEmpty()) {
+            mostrarError("Debe seleccionar un género.");
+            return false;
+        }
+        
+        // Validar que sea uno de los valores permitidos
+        String generoLower = genero.trim().toLowerCase();
+        if (!generoLower.equals("masculino") && 
+            !generoLower.equals("femenino") && 
+            !generoLower.equals("otro") &&
+            !generoLower.equals("prefiero no decir")) {
+            mostrarError("El género seleccionado no es válido.");
             return false;
         }
         

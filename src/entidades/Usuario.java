@@ -17,24 +17,31 @@ public class Usuario {
     private String email;
     private String contraseña;
     private LocalDate fechaRegistro;
+    private String fechaDeNacimiento;
+    private String genero;
 
     public Usuario() {
     }
 
-    public Usuario(String nombre, String email, String contraseña, LocalDate fechaRegistro) {
+    public Usuario(String nombre, String email, String contraseña, LocalDate fechaRegistro,String fechaDeNacimiento, String genero) {
         this.id = 0;
         this.nombre = nombre;
         this.email = email;
         this.contraseña = contraseña;
         this.fechaRegistro = fechaRegistro;
+        this.fechaDeNacimiento = fechaDeNacimiento; 
+        this.genero = genero;
+
     }
 
-    public Usuario(int id, String nombre, String email, String contraseña, LocalDate fechaRegistro) {
+    public Usuario(int id, String nombre, String email, String contraseña, LocalDate fechaRegistro, String fechaDeNacimiento,String genero) {
         this.id = id;
         this.nombre = nombre;
         this.email = email;
         this.contraseña = contraseña;
         this.fechaRegistro = fechaRegistro;
+        this.fechaDeNacimiento = fechaDeNacimiento;
+        this.genero = genero;
     }
 
     public int getId() {
@@ -75,6 +82,22 @@ public class Usuario {
 
     public void setFechaRegistro(LocalDate fechaRegistro) {
         this.fechaRegistro = fechaRegistro;
+    }
+
+    public String getFechaDeNacimiento() {
+        return fechaDeNacimiento;
+    }
+
+    public void setFechaDeNacimiento(String fechadDeNacimiento) {
+        this.fechaDeNacimiento = fechadDeNacimiento;
+    }
+
+    public String getGenero() {
+        return genero;
+    }
+
+    public void setGenero(String genero) {
+        this.genero = genero;
     }
     
     public boolean validarEmail() {
