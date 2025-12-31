@@ -4,6 +4,9 @@
  */
 package presentacion;
 
+import estructuras.Pila;
+import javax.swing.JPanel;
+
 /**
  *
  * @author ArcosArce
@@ -13,8 +16,105 @@ public class FrmRegistro extends javax.swing.JFrame {
     /**
      * Creates new form Registro
      */
+    private Pila<JPanel> historialPaneles;
+    private JPanel panelActual;
+    
+    private panRegistro panRegistro;
+    private panPaso1 panPaso1;
+    private panPaso2 panPaso2;
+
     public FrmRegistro() {
         initComponents();
+        setLocationRelativeTo(null);
+        inicializarComponentes();
+    }
+    
+    private void inicializarComponentes() {
+        historialPaneles = new Pila<>();
+        
+        panRegistro = new panRegistro();
+        panPaso1 = new panPaso1();
+        panPaso2 = new panPaso2();
+        
+        mostrarPanel(panRegistro);
+    }
+    
+    public void mostrarPanel(JPanel panel) {
+        panContenido.removeAll();
+        
+        panel.setSize(panContenido.getSize());
+        panel.setLocation(0, 0);
+        
+        panContenido.add(panel);
+        panContenido.revalidate();
+        panContenido.repaint();
+        
+        if (panelActual != null) {
+            historialPaneles.push(panelActual);
+        }
+        panelActual = panel;
+    }
+    
+    public void avanzarPaso(String pasoActual) {
+        switch (pasoActual) {
+            case "inicial":
+                mostrarPanel(panPaso1);
+                break;
+            case "paso1":
+                mostrarPanel(panPaso2);
+                break;
+            case "paso2":
+                finalizarRegistro();
+                break;
+        }
+    }
+    
+    public void retrocederPaso() {
+        if (!historialPaneles.isEmpty()) {
+            panelActual = historialPaneles.pop();
+            
+            panContenido.removeAll();
+            panelActual.setSize(panContenido.getSize());
+            panelActual.setLocation(0, 0);
+            panContenido.add(panelActual);
+            panContenido.revalidate();
+            panContenido.repaint();
+        } else {
+            volverAlLogin();
+        }
+    }
+    
+    private void finalizarRegistro() {
+        javax.swing.JOptionPane.showMessageDialog(
+            this,
+            "¡Registro completado exitosamente!",
+            "Éxito",
+            javax.swing.JOptionPane.INFORMATION_MESSAGE
+        );
+        
+        FrmLogin frmLogin = new FrmLogin();
+        frmLogin.setVisible(true);
+        this.dispose();
+    }
+    
+    private void volverAlLogin() {
+        int confirmacion = javax.swing.JOptionPane.showConfirmDialog(
+            this,
+            "¿Deseas cancelar el registro?",
+            "Confirmar",
+            javax.swing.JOptionPane.YES_NO_OPTION
+        );
+        
+        if (confirmacion == javax.swing.JOptionPane.YES_OPTION) {
+            FrmLogin frmLogin = new FrmLogin();
+            frmLogin.setVisible(true);
+            this.dispose();
+        }
+    }
+    
+    public void limpiarHistorial() {
+        historialPaneles.removeAll();
+        panelActual = null;
     }
 
     /**

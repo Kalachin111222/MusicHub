@@ -18,7 +18,7 @@ public class conexion {
         Class.forName("com.mysql.cj.jdbc.Driver");
         url="jdbc:mysql://localhost:3306/music_hub";
         user="root";
-        password="tucontraseña";
+        password="123456";
         
         System.out.println("Intentando conectar a: " + url);
         System.out.println("Usuario: " + user);
