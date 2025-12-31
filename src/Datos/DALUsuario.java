@@ -25,7 +25,12 @@ public class DALUsuario {
             cs.setString(2, u.getEmail());
             cs.setString(3, u.getContraseña());
             cs.setDate(4, Date.valueOf(u.getFechaRegistro()));
-            cs.setString(5, u.getFechaDeNacimiento());
+            if (u.getFechaDeNacimiento() != null) {
+                cs.setDate(5, java.sql.Date.valueOf(u.getFechaDeNacimiento()));
+            } else {
+                cs.setNull(5, java.sql.Types.DATE);
+            }
+
             cs.setString(6, u.getGenero());
             
             cs.executeUpdate();
@@ -56,7 +61,12 @@ public class DALUsuario {
             cs.setString(2, u.getNombre());
             cs.setString(3, u.getEmail());
             cs.setString(4, u.getContraseña());
-            cs.setString(5, u.getFechaDeNacimiento());
+            if (u.getFechaDeNacimiento() != null) {
+                cs.setDate(5, java.sql.Date.valueOf(u.getFechaDeNacimiento()));
+            } else {
+                cs.setNull(5, java.sql.Types.DATE);
+            }
+
             cs.setString(6, u.getGenero());
 
             cs.executeUpdate();
@@ -121,7 +131,11 @@ public class DALUsuario {
                 usuario.setEmail(rs.getString("email"));
                 usuario.setContraseña(rs.getString("contrasena"));
                 usuario.setFechaRegistro(rs.getDate("fecha_registro").toLocalDate());
-                usuario.setFechaDeNacimiento(rs.getString("fecha_nacimiento"));
+                Date fn = rs.getDate("fecha_nacimiento");
+                if (fn != null) {
+                    usuario.setFechaDeNacimiento(fn.toLocalDate());
+                }
+
                 usuario.setGenero(rs.getString("genero"));
             }
 
@@ -159,7 +173,11 @@ public class DALUsuario {
                 usuario.setEmail(rs.getString("email"));
                 usuario.setContraseña(rs.getString("contrasena"));
                 usuario.setFechaRegistro(rs.getDate("fecha_registro").toLocalDate());
-                usuario.setFechaDeNacimiento(rs.getString("fecha_nacimiento"));
+                Date fn = rs.getDate("fecha_nacimiento");
+                if (fn != null) {
+                    usuario.setFechaDeNacimiento(fn.toLocalDate());
+                }
+
                 usuario.setGenero(rs.getString("genero"));
             }
 
