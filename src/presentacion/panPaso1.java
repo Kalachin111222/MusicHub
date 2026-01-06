@@ -4,6 +4,10 @@
  */
 package presentacion;
 
+import java.awt.Color;
+import java.awt.Cursor;
+import logica.BLLUsuario;
+
 /**
  *
  * @author ArcosArce
@@ -13,9 +17,75 @@ public class panPaso1 extends javax.swing.JPanel {
     /**
      * Creates new form panPaso1
      */
-    public panPaso1() {
+    private FrmRegistro parent;
+    private static final String PLACEHOLDER_PASSWORD = "Contraseña";
+    private static final String PLACEHOLDER_CONFIRM = "Confirmar contraseña";
+    private static final Color COLOR_PLACEHOLDER = new Color(153, 153, 153);
+    private static final Color COLOR_TEXTO = new Color(255, 255, 255);
+
+    public panPaso1(FrmRegistro parent) {
+        this.parent = parent;
         initComponents();
+        configurarPlaceholders();
+        actualizarProgressBar();
     }
+    
+    private void actualizarProgressBar() {
+        pgbProgreso.setValue(50);
+        pgbProgreso.setEnabled(false); // Desactiva interacción
+        pgbProgreso.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); // Cursor normal
+    }
+    
+    private void configurarPlaceholders() {
+        // Placeholder para contraseña
+        txtPassword.setEchoChar((char) 0);
+        txtPassword.setText(PLACEHOLDER_PASSWORD);
+        txtPassword.setForeground(COLOR_PLACEHOLDER);
+
+        txtPassword.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (String.valueOf(txtPassword.getPassword()).equals(PLACEHOLDER_PASSWORD)) {
+                    txtPassword.setText("");
+                    txtPassword.setForeground(COLOR_TEXTO);
+                    txtPassword.setEchoChar('•');
+                }
+            }
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (String.valueOf(txtPassword.getPassword()).trim().isEmpty()) {
+                    txtPassword.setEchoChar((char) 0);
+                    txtPassword.setText(PLACEHOLDER_PASSWORD);
+                    txtPassword.setForeground(COLOR_PLACEHOLDER);
+                }
+            }
+        });
+
+        // Placeholder para confirmar contraseña
+        txtConfirmarPassword.setEchoChar((char) 0);
+        txtConfirmarPassword.setText(PLACEHOLDER_CONFIRM);
+        txtConfirmarPassword.setForeground(COLOR_PLACEHOLDER);
+
+        txtConfirmarPassword.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (String.valueOf(txtConfirmarPassword.getPassword()).equals(PLACEHOLDER_CONFIRM)) {
+                    txtConfirmarPassword.setText("");
+                    txtConfirmarPassword.setForeground(COLOR_TEXTO);
+                    txtConfirmarPassword.setEchoChar('•');
+                }
+            }
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (String.valueOf(txtConfirmarPassword.getPassword()).trim().isEmpty()) {
+                    txtConfirmarPassword.setEchoChar((char) 0);
+                    txtConfirmarPassword.setText(PLACEHOLDER_CONFIRM);
+                    txtConfirmarPassword.setForeground(COLOR_PLACEHOLDER);
+                }
+            }
+        });
+    }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -26,21 +96,28 @@ public class panPaso1 extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jProgressBar1 = new javax.swing.JProgressBar();
-        jButton1 = new BotonPersonalizado(new java.awt.Color(20,20,20));
-        jLabel2 = new javax.swing.JLabel();
+        pgbProgreso = new ProgressBarPersonalizada();
+        btnVolver = new BotonPersonalizado(new java.awt.Color(20,20,20));
         jLabel1 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        jPasswordField1 = new javax.swing.JPasswordField();
-        jButton2 = new BotonPersonalizado(new java.awt.Color(29,184,85));
+        txtPassword = new javax.swing.JPasswordField();
+        btnSiguiente = new BotonPersonalizado(new java.awt.Color(29,184,85));
+        txtConfirmarPassword = new javax.swing.JPasswordField();
+        jLabel5 = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(20, 20, 20));
 
-        jButton1.setBackground(new java.awt.Color(20, 20, 20));
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/volver-arriba-removebg-preview.png"))); // NOI18N
+        pgbProgreso.setBackground(new java.awt.Color(204, 204, 204));
+        pgbProgreso.setForeground(new java.awt.Color(29, 184, 85));
 
-        jLabel2.setText("jLabel2");
+        btnVolver.setBackground(new java.awt.Color(20, 20, 20));
+        btnVolver.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/volver-arriba-removebg-preview.png"))); // NOI18N
+        btnVolver.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnVolverActionPerformed(evt);
+            }
+        });
 
         jLabel1.setFont(new java.awt.Font("Roboto", 0, 14)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(204, 204, 204));
@@ -54,13 +131,26 @@ public class panPaso1 extends javax.swing.JPanel {
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
         jLabel4.setText("Contraseña");
 
-        jPasswordField1.setBackground(new java.awt.Color(20, 20, 20));
-        jPasswordField1.setForeground(new java.awt.Color(255, 255, 255));
-        jPasswordField1.setText("jPasswordField1");
+        txtPassword.setBackground(new java.awt.Color(20, 20, 20));
+        txtPassword.setForeground(new java.awt.Color(255, 255, 255));
+        txtPassword.setText("jPasswordField1");
 
-        jButton2.setBackground(new java.awt.Color(29, 184, 85));
-        jButton2.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
-        jButton2.setText("Siguiente");
+        btnSiguiente.setBackground(new java.awt.Color(29, 184, 85));
+        btnSiguiente.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
+        btnSiguiente.setText("Siguiente");
+        btnSiguiente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSiguienteActionPerformed(evt);
+            }
+        });
+
+        txtConfirmarPassword.setBackground(new java.awt.Color(20, 20, 20));
+        txtConfirmarPassword.setForeground(new java.awt.Color(255, 255, 255));
+        txtConfirmarPassword.setText("jPasswordField1");
+
+        jLabel5.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
+        jLabel5.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel5.setText("Confirma contraseña");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -69,54 +159,91 @@ public class panPaso1 extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGap(480, 480, 480)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 320, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(pgbProgreso, javax.swing.GroupLayout.PREFERRED_SIZE, 320, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnVolver, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel5)
                             .addComponent(jLabel1)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel3)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel2))
+                            .addComponent(jLabel3)
                             .addComponent(jLabel4)
-                            .addComponent(jPasswordField1)
-                            .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE))))
+                            .addComponent(txtPassword)
+                            .addComponent(btnSiguiente, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
+                            .addComponent(txtConfirmarPassword))))
                 .addContainerGap(480, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(120, 120, 120)
-                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(pgbProgreso, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnVolver, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel3))))
+                        .addComponent(jLabel3)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPasswordField1, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(160, 160, 160)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtConfirmarPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(91, 91, 91)
+                .addComponent(btnSiguiente, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(269, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnSiguienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSiguienteActionPerformed
+        String password = new String(txtPassword.getPassword());
+        String confirmar = new String(txtConfirmarPassword.getPassword());
+
+        // Solo validar que no estén vacíos ni sean placeholders
+        if (password.isEmpty() || password.equals(PLACEHOLDER_PASSWORD)) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Ingrese una contraseña");
+            return;
+        }
+
+        if (confirmar.isEmpty() || confirmar.equals(PLACEHOLDER_CONFIRM)) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Confirme su contraseña");
+            return;
+        }
+
+        if (!password.equals(confirmar)) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Las contraseñas no coinciden");
+            return;
+        }
+
+        if(BLLUsuario.validarContraseña(password)){
+            parent.getDatosRegistro().setPassword(password);
+            parent.getDatosRegistro().setConfirmarPassword(confirmar);
+            parent.avanzarPaso("paso1");
+        }
+        
+    }//GEN-LAST:event_btnSiguienteActionPerformed
+
+    private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed
+        parent.retrocederPaso();
+    }//GEN-LAST:event_btnVolverActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JButton btnSiguiente;
+    private javax.swing.JButton btnVolver;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JPasswordField jPasswordField1;
-    private javax.swing.JProgressBar jProgressBar1;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JProgressBar pgbProgreso;
+    private javax.swing.JPasswordField txtConfirmarPassword;
+    private javax.swing.JPasswordField txtPassword;
     // End of variables declaration//GEN-END:variables
 }

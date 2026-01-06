@@ -4,6 +4,14 @@
  */
 package presentacion;
 
+import java.awt.Color;
+import java.awt.Cursor;
+import java.time.LocalDate;
+import logica.BLLUsuario;
+import presentacion.BotonPersonalizado;
+import presentacion.FrmRegistro;
+import presentacion.ProgressBarPersonalizada;
+
 /**
  *
  * @author ArcosArce
@@ -13,8 +21,83 @@ public class panPaso2 extends javax.swing.JPanel {
     /**
      * Creates new form panPaso1
      */
-    public panPaso2() {
+    private FrmRegistro parent;
+    private static final String PLACEHOLDER_DIA = "dd";
+    private static final String PLACEHOLDER_AÑO = "aaaa";
+    private static final Color COLOR_PLACEHOLDER = new Color(153, 153, 153);
+    private static final Color COLOR_TEXTO = new Color(255, 255, 255);
+    
+    public panPaso2(FrmRegistro parent) {
+        this.parent = parent;
         initComponents();
+        cargarMeses();
+        configurarPlaceholders(); // AGREGAR
+        actualizarProgressBar(); // AGREGAR
+    }
+    
+    private void actualizarProgressBar() {
+        pgbProgreso.setValue(100);
+        pgbProgreso.setEnabled(false);
+        pgbProgreso.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    }
+    
+    private void configurarPlaceholders() {
+        // Placeholder para día
+        txtDia.setText(PLACEHOLDER_DIA);
+        txtDia.setForeground(COLOR_PLACEHOLDER);
+
+        txtDia.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (txtDia.getText().equals(PLACEHOLDER_DIA)) {
+                    txtDia.setText("");
+                    txtDia.setForeground(COLOR_TEXTO);
+                }
+            }
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (txtDia.getText().trim().isEmpty()) {
+                    txtDia.setText(PLACEHOLDER_DIA);
+                    txtDia.setForeground(COLOR_PLACEHOLDER);
+                }
+            }
+        });
+
+        // Placeholder para año
+        txtAño.setText(PLACEHOLDER_AÑO);
+        txtAño.setForeground(COLOR_PLACEHOLDER);
+
+        txtAño.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (txtAño.getText().equals(PLACEHOLDER_AÑO)) {
+                    txtAño.setText("");
+                    txtAño.setForeground(COLOR_TEXTO);
+                }
+            }
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (txtAño.getText().trim().isEmpty()) {
+                    txtAño.setText(PLACEHOLDER_AÑO);
+                    txtAño.setForeground(COLOR_PLACEHOLDER);
+                }
+            }
+        });
+
+        // Placeholder para nombre
+        txtNombre.setForeground(COLOR_TEXTO);
+    }
+    
+    private void cargarMeses() {
+        cmbMes.removeAllItems();
+        cmbMes.addItem("Mes"); // Opción por defecto
+        String[] meses = {
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        };
+        for (String mes : meses) {
+            cmbMes.addItem(mes);
+        }
     }
 
     /**
@@ -26,33 +109,36 @@ public class panPaso2 extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jProgressBar1 = new javax.swing.JProgressBar();
-        jButton1 = new BotonPersonalizado(new java.awt.Color(20,20,20));
-        jLabel2 = new javax.swing.JLabel();
+        btgGenero = new javax.swing.ButtonGroup();
+        pgbProgreso = new ProgressBarPersonalizada();
+        btnVolver = new BotonPersonalizado(new java.awt.Color(20,20,20));
         jLabel1 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        jButton2 = new BotonPersonalizado(new java.awt.Color(29,184,85));
+        btnRegistrar = new BotonPersonalizado(new java.awt.Color(29,184,85));
         jLabel5 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        txtNombre = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jTextField3 = new javax.swing.JTextField();
+        txtDia = new javax.swing.JTextField();
+        cmbMes = new javax.swing.JComboBox<>();
+        txtAño = new javax.swing.JTextField();
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
-        jRadioButton1 = new javax.swing.JRadioButton();
-        jRadioButton2 = new javax.swing.JRadioButton();
-        jRadioButton3 = new javax.swing.JRadioButton();
+        jrbHombre = new javax.swing.JRadioButton();
+        jrbOtro = new javax.swing.JRadioButton();
+        jrbMujer = new javax.swing.JRadioButton();
 
         setBackground(new java.awt.Color(20, 20, 20));
 
-        jButton1.setBackground(new java.awt.Color(20, 20, 20));
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/volver-arriba-removebg-preview.png"))); // NOI18N
-
-        jLabel2.setText("jLabel2");
+        btnVolver.setBackground(new java.awt.Color(20, 20, 20));
+        btnVolver.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/volver-arriba-removebg-preview.png"))); // NOI18N
+        btnVolver.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnVolverActionPerformed(evt);
+            }
+        });
 
         jLabel1.setFont(new java.awt.Font("Roboto", 0, 14)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(204, 204, 204));
@@ -66,15 +152,20 @@ public class panPaso2 extends javax.swing.JPanel {
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
         jLabel4.setText("Nombre");
 
-        jButton2.setBackground(new java.awt.Color(29, 184, 85));
-        jButton2.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
-        jButton2.setText("Siguiente");
+        btnRegistrar.setBackground(new java.awt.Color(29, 184, 85));
+        btnRegistrar.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
+        btnRegistrar.setText("Regístrate");
+        btnRegistrar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRegistrarActionPerformed(evt);
+            }
+        });
 
         jLabel5.setForeground(new java.awt.Color(204, 204, 204));
         jLabel5.setText("Este nombre aparecerá en tu perfil");
 
-        jTextField1.setBackground(new java.awt.Color(20, 20, 20));
-        jTextField1.setForeground(new java.awt.Color(255, 255, 255));
+        txtNombre.setBackground(new java.awt.Color(20, 20, 20));
+        txtNombre.setForeground(new java.awt.Color(255, 255, 255));
 
         jLabel6.setFont(new java.awt.Font("Roboto", 1, 12)); // NOI18N
         jLabel6.setForeground(new java.awt.Color(255, 255, 255));
@@ -83,35 +174,20 @@ public class panPaso2 extends javax.swing.JPanel {
         jLabel7.setForeground(new java.awt.Color(204, 204, 204));
         jLabel7.setText("¿Por qué necesitamos tu fecha de nacimiento?");
 
-        jTextField2.setBackground(new java.awt.Color(20, 20, 20));
-        jTextField2.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jTextField2.setForeground(new java.awt.Color(255, 255, 255));
-        jTextField2.setText("dd");
-        jTextField2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField2ActionPerformed(evt);
-            }
-        });
+        txtDia.setBackground(new java.awt.Color(20, 20, 20));
+        txtDia.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        txtDia.setForeground(new java.awt.Color(255, 255, 255));
+        txtDia.setText("dd");
 
-        jComboBox1.setBackground(new java.awt.Color(20, 20, 20));
-        jComboBox1.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jComboBox1.setForeground(new java.awt.Color(255, 255, 255));
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Mes" }));
-        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jComboBox1ActionPerformed(evt);
-            }
-        });
+        cmbMes.setBackground(new java.awt.Color(20, 20, 20));
+        cmbMes.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        cmbMes.setForeground(new java.awt.Color(255, 255, 255));
+        cmbMes.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Mes" }));
 
-        jTextField3.setBackground(new java.awt.Color(20, 20, 20));
-        jTextField3.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jTextField3.setForeground(new java.awt.Color(255, 255, 255));
-        jTextField3.setText("aaaa");
-        jTextField3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField3ActionPerformed(evt);
-            }
-        });
+        txtAño.setBackground(new java.awt.Color(20, 20, 20));
+        txtAño.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        txtAño.setForeground(new java.awt.Color(255, 255, 255));
+        txtAño.setText("aaaa");
 
         jLabel8.setForeground(new java.awt.Color(204, 204, 204));
         jLabel8.setText("Usamos tu género para personalizar nuestras ");
@@ -123,17 +199,20 @@ public class panPaso2 extends javax.swing.JPanel {
         jLabel10.setForeground(new java.awt.Color(204, 204, 204));
         jLabel10.setText("recomendaciones de contenido y los anuncios.");
 
-        jRadioButton1.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jRadioButton1.setForeground(new java.awt.Color(255, 255, 255));
-        jRadioButton1.setText("Hombre");
+        btgGenero.add(jrbHombre);
+        jrbHombre.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        jrbHombre.setForeground(new java.awt.Color(255, 255, 255));
+        jrbHombre.setText("Hombre");
 
-        jRadioButton2.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jRadioButton2.setForeground(new java.awt.Color(255, 255, 255));
-        jRadioButton2.setText("Otro");
+        btgGenero.add(jrbOtro);
+        jrbOtro.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        jrbOtro.setForeground(new java.awt.Color(255, 255, 255));
+        jrbOtro.setText("Otro");
 
-        jRadioButton3.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jRadioButton3.setForeground(new java.awt.Color(255, 255, 255));
-        jRadioButton3.setText("Mujer");
+        btgGenero.add(jrbMujer);
+        jrbMujer.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        jrbMujer.setForeground(new java.awt.Color(255, 255, 255));
+        jrbMujer.setText("Mujer");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -142,9 +221,9 @@ public class panPaso2 extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGap(480, 480, 480)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 320, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(pgbProgreso, javax.swing.GroupLayout.PREFERRED_SIZE, 320, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnVolver, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel8)
@@ -152,59 +231,54 @@ public class panPaso2 extends javax.swing.JPanel {
                             .addComponent(jLabel10)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                 .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jRadioButton1)
+                                    .addComponent(jrbHombre)
                                     .addGap(40, 40, 40)
-                                    .addComponent(jRadioButton3)
+                                    .addComponent(jrbMujer)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jRadioButton2))
+                                    .addComponent(jrbOtro))
                                 .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                    .addComponent(jLabel3)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jLabel2))
+                                .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jButton2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jTextField1)
+                                .addComponent(btnRegistrar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(txtNombre)
                                 .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtDia, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGap(12, 12, 12)
-                                    .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(cmbMes, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                                    .addComponent(txtAño, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))))
                 .addContainerGap(480, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(120, 120, 120)
-                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(pgbProgreso, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnVolver, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel3))))
+                        .addComponent(jLabel3)))
                 .addGap(20, 20, 20)
                 .addComponent(jLabel4)
                 .addGap(0, 0, 0)
                 .addComponent(jLabel5)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel6)
                 .addGap(0, 0, 0)
                 .addComponent(jLabel7)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTextField2)
-                    .addComponent(jComboBox1))
+                    .addComponent(txtAño, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtDia)
+                    .addComponent(cmbMes))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel9)
                 .addGap(0, 0, 0)
@@ -213,35 +287,83 @@ public class panPaso2 extends javax.swing.JPanel {
                 .addComponent(jLabel10)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jRadioButton1)
-                    .addComponent(jRadioButton2)
-                    .addComponent(jRadioButton3))
+                    .addComponent(jrbHombre)
+                    .addComponent(jrbOtro)
+                    .addComponent(jrbMujer))
                 .addGap(30, 30, 30)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnRegistrar, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(205, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jTextField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField2ActionPerformed
+    private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
+        String nombre = txtNombre.getText().trim();
+        String diaStr = txtDia.getText().trim();
+        String mesStr = cmbMes.getSelectedItem().toString();
+        String anioStr = txtAño.getText().trim();
 
-    private void jTextField3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField3ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField3ActionPerformed
+        // Solo validar que no estén vacíos
+        if (nombre.isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Ingrese su nombre");
+            return;
+        }
 
-    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jComboBox1ActionPerformed
+        if (diaStr.equals(PLACEHOLDER_DIA) || anioStr.equals(PLACEHOLDER_AÑO)) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Complete su fecha de nacimiento");
+            return;
+        }
+
+        if (mesStr.equals("Mes")) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Seleccione un mes");
+            return;
+        }
+
+        try {
+            int dia = Integer.parseInt(diaStr);
+            int anio = Integer.parseInt(anioStr);
+            int mes = cmbMes.getSelectedIndex();
+
+            java.time.LocalDate fechaNacimiento = java.time.LocalDate.of(anio, mes, dia);
+
+            String genero = null;
+            if (jrbHombre.isSelected()) genero = "Masculino";
+            else if (jrbMujer.isSelected()) genero = "Femenino";
+            else if (jrbOtro.isSelected()) genero = "Otro";
+
+            if (genero == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, 
+                    "Seleccione un género");
+                return;
+            }
+
+            if(BLLUsuario.validarDatosRegistro(nombre, fechaNacimiento, genero)){
+                parent.getDatosRegistro().setNombre(nombre);
+                parent.getDatosRegistro().setFechaNacimiento(fechaNacimiento);
+                parent.getDatosRegistro().setGenero(genero);
+                // Aquí es donde BLL valida TODO
+                parent.avanzarPaso("paso2");
+            }
+            
+        } catch (Exception e) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Fecha inválida. Verifique los datos");
+        }
+    }//GEN-LAST:event_btnRegistrarActionPerformed
+
+    private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed
+        parent.retrocederPaso();
+    }//GEN-LAST:event_btnVolverActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.ButtonGroup btgGenero;
+    private javax.swing.JButton btnRegistrar;
+    private javax.swing.JButton btnVolver;
+    private javax.swing.JComboBox<String> cmbMes;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -249,12 +371,13 @@ public class panPaso2 extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
-    private javax.swing.JProgressBar jProgressBar1;
-    private javax.swing.JRadioButton jRadioButton1;
-    private javax.swing.JRadioButton jRadioButton2;
-    private javax.swing.JRadioButton jRadioButton3;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
+    private javax.swing.JRadioButton jrbHombre;
+    private javax.swing.JRadioButton jrbMujer;
+    private javax.swing.JRadioButton jrbOtro;
+    private javax.swing.JProgressBar pgbProgreso;
+    private javax.swing.JTextField txtAño;
+    private javax.swing.JTextField txtDia;
+    private javax.swing.JTextField txtNombre;
     // End of variables declaration//GEN-END:variables
+
 }

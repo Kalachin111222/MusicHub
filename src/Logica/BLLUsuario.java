@@ -10,41 +10,7 @@ import java.time.format.DateTimeParseException;
 import java.util.regex.Pattern;
 
 public class BLLUsuario {
-
-    public static boolean procesarRegistro(String nombre, String email, String password,
-            String confirmarPassword, LocalDate fechaNacimiento,
-            String genero) {
-        if (!validarDatosRegistro(nombre, email, password, confirmarPassword,
-                fechaNacimiento, genero)) {
-            return false;
-        }
-        if (DALUsuario.existeEmail(email.trim())) {
-            mostrarError("El email ya está registrado.");
-            return false;
-        }
-        Usuario nuevoUsuario = new Usuario(
-                nombre.trim(),
-                email.trim().toLowerCase(),
-                password,
-                LocalDate.now(),
-                fechaNacimiento,
-                genero.trim()
-        );
-        String mensaje = DALUsuario.insertarUsuario(nuevoUsuario);
-
-        if (mensaje != null) {
-            mostrarError("Error al registrar: " + mensaje);
-            return false;
-        }
-        Usuario usuarioRegistrado = DALUsuario.obtenerUsuarioPorEmail(email.trim());
-        if (usuarioRegistrado != null) {
-            CLLUsuario.getInstancia().setUsuario(usuarioRegistrado);
-        }
-
-        mostrarExito("Usuario registrado exitosamente.");
-        return true;
-    }
-
+    
     public static Usuario procesarLogin(String email, String password) {
         if (!validarDatosLogin(email, password)) {
             return null;
@@ -166,23 +132,8 @@ public class BLLUsuario {
         return true;
     }
 
-    private static boolean validarDatosRegistro(String nombre, String email,
-            String password, String confirmarPassword,
-            LocalDate fechaNacimiento, String genero) {
+    public static boolean validarDatosRegistro(String nombre,LocalDate fechaNacimiento, String genero) {
         if (!validarNombre(nombre)) {
-            return false;
-        }
-
-        if (!validarEmail(email)) {
-            return false;
-        }
-
-        if (!validarContraseña(password)) {
-            return false;
-        }
-
-        if (!password.equals(confirmarPassword)) {
-            mostrarError("Las contraseñas no coinciden.");
             return false;
         }
 
@@ -197,7 +148,7 @@ public class BLLUsuario {
         return true;
     }
 
-    private static boolean validarDatosLogin(String email, String password) {
+    public static boolean validarDatosLogin(String email, String password) {
         if (email == null || email.trim().isEmpty()) {
             mostrarError("El email no puede estar vacío.");
             return false;
@@ -216,7 +167,7 @@ public class BLLUsuario {
         return true;
     }
 
-    private static boolean validarNombre(String nombre) {
+    public static boolean validarNombre(String nombre) {
         if (nombre == null || nombre.trim().isEmpty()) {
             mostrarError("El nombre no puede estar vacío.");
             return false;
@@ -240,7 +191,7 @@ public class BLLUsuario {
         return true;
     }
 
-    private static boolean validarEmail(String email) {
+    public static boolean validarEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
             mostrarError("El email no puede estar vacío.");
             return false;
@@ -259,13 +210,13 @@ public class BLLUsuario {
         return true;
     }
 
-    private static boolean validarFormatoEmail(String email) {
+    public static boolean validarFormatoEmail(String email) {
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         Pattern pattern = Pattern.compile(emailRegex);
         return pattern.matcher(email.trim()).matches();
     }
 
-    private static boolean validarContraseña(String password) {
+    public static boolean validarContraseña(String password) {
         if (password == null || password.isEmpty()) {
             mostrarError("La contraseña no puede estar vacía.");
             return false;
@@ -289,7 +240,7 @@ public class BLLUsuario {
         return true;
     }
 
-    private static boolean validarFechaNacimiento(LocalDate fecha) {
+    public static boolean validarFechaNacimiento(LocalDate fecha) {
         if (fecha == null) {
             mostrarError("La fecha de nacimiento es obligatoria.");
             return false;
@@ -316,7 +267,7 @@ public class BLLUsuario {
         return true;
     }
 
-    private static boolean validarGenero(String genero) {
+    public static boolean validarGenero(String genero) {
         if (genero == null || genero.trim().isEmpty()) {
             mostrarError("Debe seleccionar un género.");
             return false;
@@ -347,7 +298,7 @@ public class BLLUsuario {
         return CLLUsuario.getInstancia().hayUsuarioLogueado();
     }
 
-    private static void mostrarError(String mensaje) {
+    public static void mostrarError(String mensaje) {
         JOptionPane.showMessageDialog(
                 null,
                 mensaje,
