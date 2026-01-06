@@ -4,8 +4,15 @@
  */
 package presentacion;
 
+import Datos.DALUsuario;
+import entidades.Usuario;
 import estructuras.Pila;
+import java.time.LocalDate;
 import javax.swing.JPanel;
+import listasDinamicas.CLLUsuario;
+import logica.BLLUsuario;
+import static logica.BLLUsuario.mostrarError;
+import static logica.BLLUsuario.mostrarExito;
 
 /**
  *
@@ -22,6 +29,7 @@ public class FrmRegistro extends javax.swing.JFrame {
     private panRegistro panRegistro;
     private panPaso1 panPaso1;
     private panPaso2 panPaso2;
+    private DatosRegistro datosRegistro;
 
     public FrmRegistro() {
         initComponents();
@@ -31,11 +39,13 @@ public class FrmRegistro extends javax.swing.JFrame {
     
     private void inicializarComponentes() {
         historialPaneles = new Pila<>();
-        
-        panRegistro = new panRegistro();
-        panPaso1 = new panPaso1();
-        panPaso2 = new panPaso2();
-        
+        datosRegistro = new DatosRegistro(); // AGREGAR ESTA LÍNEA
+
+        // Pasar la referencia del Frame a cada panel
+        panRegistro = new panRegistro(this);
+        panPaso1 = new panPaso1(this);
+        panPaso2 = new panPaso2(this);
+
         mostrarPanel(panRegistro);
     }
     
@@ -85,16 +95,55 @@ public class FrmRegistro extends javax.swing.JFrame {
     }
     
     private void finalizarRegistro() {
-        javax.swing.JOptionPane.showMessageDialog(
-            this,
-            "¡Registro completado exitosamente!",
-            "Éxito",
-            javax.swing.JOptionPane.INFORMATION_MESSAGE
+        // Procesar el registro usando BLL
+        boolean exito = procesarRegistro(
+            datosRegistro.getNombre(),
+            datosRegistro.getEmail(),
+            datosRegistro.getPassword(),
+            datosRegistro.getConfirmarPassword(),
+            datosRegistro.getFechaNacimiento(),
+            datosRegistro.getGenero()
         );
-        
-        FrmLogin frmLogin = new FrmLogin();
-        frmLogin.setVisible(true);
-        this.dispose();
+
+        if (exito) {
+            // Redirigir a ventana principal
+            FrmPrincipal frmPrincipal = new FrmPrincipal();
+            frmPrincipal.setVisible(true);
+            this.dispose();
+        }
+        // Si falla, BLL ya muestra el error
+    }
+    
+    private boolean procesarRegistro(String nombre, String email, String password,String confirmarPassword, LocalDate fechaNacimiento,String genero){
+        if (DALUsuario.existeEmail(email.trim())) {
+            mostrarError("El email ya está registrado.");
+            return false;
+        }
+        Usuario nuevoUsuario = new Usuario(
+                nombre.trim(),
+                email.trim().toLowerCase(),
+                password,
+                LocalDate.now(),
+                fechaNacimiento,
+                genero.trim()
+        );
+        String mensaje = DALUsuario.insertarUsuario(nuevoUsuario);
+
+        if (mensaje != null) {
+            mostrarError("Error al registrar: " + mensaje);
+            return false;
+        }
+        Usuario usuarioRegistrado = DALUsuario.obtenerUsuarioPorEmail(email.trim());
+        if (usuarioRegistrado != null) {
+            CLLUsuario.getInstancia().setUsuario(usuarioRegistrado);
+        }
+
+        mostrarExito("Usuario registrado exitosamente.");
+        return true;
+    }
+    
+    public DatosRegistro getDatosRegistro() {
+        return datosRegistro;
     }
     
     private void volverAlLogin() {

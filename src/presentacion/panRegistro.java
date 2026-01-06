@@ -4,6 +4,10 @@
  */
 package presentacion;
 
+import java.awt.Color;
+import logica.BLLUsuario;
+import static logica.BLLUsuario.validarEmail;
+
 /**
  *
  * @author ArcosArce
@@ -13,8 +17,38 @@ public class panRegistro extends javax.swing.JPanel {
     /**
      * Creates new form panPaso1
      */
-    public panRegistro() {
+    private FrmRegistro parent;
+    private static final String PLACEHOLDER_EMAIL = "nombre@dominio.com";
+    private static final Color COLOR_PLACEHOLDER = new Color(153, 153, 153);
+    private static final Color COLOR_TEXTO = new Color(255, 255, 255);
+    
+    public panRegistro(FrmRegistro parent) {
+        this.parent = parent;
         initComponents();
+        configurarPlaceholders(); // AGREGAR
+    }
+    
+    private void configurarPlaceholders() {
+        // Configurar placeholder del correo
+        txtCorreo.setText(PLACEHOLDER_EMAIL);
+        txtCorreo.setForeground(COLOR_PLACEHOLDER);
+
+        txtCorreo.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (txtCorreo.getText().equals(PLACEHOLDER_EMAIL)) {
+                    txtCorreo.setText("");
+                    txtCorreo.setForeground(COLOR_TEXTO);
+                }
+            }
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (txtCorreo.getText().trim().isEmpty()) {
+                    txtCorreo.setText(PLACEHOLDER_EMAIL);
+                    txtCorreo.setForeground(COLOR_PLACEHOLDER);
+                }
+            }
+        });
     }
 
     /**
@@ -28,12 +62,11 @@ public class panRegistro extends javax.swing.JPanel {
 
         jLabel2 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        jButton2 = new BotonPersonalizado(new java.awt.Color(29,184,85));
+        btnSiguiente = new BotonPersonalizado(new java.awt.Color(29,184,85));
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
+        txtCorreo = new javax.swing.JTextField();
 
         setBackground(new java.awt.Color(20, 20, 20));
 
@@ -43,9 +76,14 @@ public class panRegistro extends javax.swing.JPanel {
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
         jLabel4.setText("Dirección de correo electrónico");
 
-        jButton2.setBackground(new java.awt.Color(29, 184, 85));
-        jButton2.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
-        jButton2.setText("Siguiente");
+        btnSiguiente.setBackground(new java.awt.Color(29, 184, 85));
+        btnSiguiente.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
+        btnSiguiente.setText("Siguiente");
+        btnSiguiente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSiguienteActionPerformed(evt);
+            }
+        });
 
         jLabel5.setFont(new java.awt.Font("Roboto", 1, 18)); // NOI18N
         jLabel5.setForeground(new java.awt.Color(255, 255, 255));
@@ -65,13 +103,9 @@ public class panRegistro extends javax.swing.JPanel {
         jLabel7.setText("empezar a escuchar");
         jLabel7.setToolTipText("");
 
-        jTextField1.setBackground(new java.awt.Color(20, 20, 20));
-        jTextField1.setForeground(new java.awt.Color(255, 255, 255));
-        jTextField1.setText("nombre@dominio.com");
-
-        jLabel1.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(29, 184, 85));
-        jLabel1.setText("Usa un número de teléfono en su lugar.");
+        txtCorreo.setBackground(new java.awt.Color(20, 20, 20));
+        txtCorreo.setForeground(new java.awt.Color(255, 255, 255));
+        txtCorreo.setText("nombre@dominio.com");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -86,15 +120,13 @@ public class panRegistro extends javax.swing.JPanel {
                 .addContainerGap())
             .addGroup(layout.createSequentialGroup()
                 .addGap(522, 522, 522)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addGroup(layout.createSequentialGroup()
-                            .addGap(143, 143, 143)
-                            .addComponent(jLabel2))
-                        .addComponent(jLabel4)
-                        .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
-                        .addComponent(jTextField1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(143, 143, 143)
+                        .addComponent(jLabel2))
+                    .addComponent(jLabel4)
+                    .addComponent(btnSiguiente, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
+                    .addComponent(txtCorreo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE))
                 .addContainerGap(522, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -111,24 +143,40 @@ public class panRegistro extends javax.swing.JPanel {
                 .addGap(29, 29, 29)
                 .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel1)
-                .addGap(128, 128, 128)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtCorreo, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(149, 149, 149)
+                .addComponent(btnSiguiente, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(245, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnSiguienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSiguienteActionPerformed
+        String email = txtCorreo.getText().trim();
+    
+        // Validar que no sea el placeholder
+        if (email.isEmpty() || email.equals(PLACEHOLDER_EMAIL)) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Ingrese un correo electrónico");
+            return;
+        }
+
+        if (BLLUsuario.validarEmail(email)) {
+            // Guardar en DTO
+            parent.getDatosRegistro().setEmail(email);
+
+            // Avanzar al siguiente paso
+            parent.avanzarPaso("inicial");
+        }
+    }//GEN-LAST:event_btnSiguienteActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton2;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JButton btnSiguiente;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField txtCorreo;
     // End of variables declaration//GEN-END:variables
 }
