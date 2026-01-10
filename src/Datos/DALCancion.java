@@ -72,7 +72,6 @@ public class DALCancion {
             c.setTitulo(rs.getString("titulo"));
             c.setDuracion(rs.getInt("duracion"));
             c.setGenero(rs.getString("genero"));
-            c.setPopularidad(rs.getInt("popularidad"));
             c.setNumeroReproducciones(rs.getInt("numero_reproducciones"));
             c.setUrlAudio(rs.getString("url_audio"));
 
@@ -137,59 +136,7 @@ public static String actualizarCancion(Cancion c) {
     return mensaje;
 }
  
-public static String desactivarCancion(int id) {
 
-    String mensaje = null;
-
-    try {
-        cn = conexion.realizarconexion();
-
-        String sql = "{call sp_desactivar_cancion(?)}";
-        cs = cn.prepareCall(sql);
-        cs.setInt(1, id);
-
-        cs.executeUpdate();
-
-    } catch (ClassNotFoundException | SQLException ex) {
-        mensaje = ex.getMessage();
-    } finally {
-        try {
-            if (cs != null) cs.close();
-            if (cn != null) cn.close();
-        } catch (SQLException ex) {
-            mensaje = ex.getMessage();
-        }
-    }
-
-    return mensaje;
-}
-
-public static String activarCancion(int id) {
-
-    String mensaje = null;
-
-    try {
-        cn = conexion.realizarconexion();
-
-        String sql = "{call sp_activar_cancion(?)}";
-        cs = cn.prepareCall(sql);
-        cs.setInt(1, id);
-
-        cs.executeUpdate();
-
-    } catch (ClassNotFoundException | SQLException ex) {
-        mensaje = ex.getMessage();
-    } finally {
-        try {
-            if (cs != null) cs.close();
-            if (cn != null) cn.close();
-        } catch (SQLException ex) {
-            mensaje = ex.getMessage();
-        }
-    }
-
-    return mensaje;
-}
 
 
 public static List<Cancion> listarCancionesPorArtista(int artistaId) {
@@ -211,7 +158,6 @@ public static List<Cancion> listarCancionesPorArtista(int artistaId) {
             c.setTitulo(rs.getString("titulo"));
             c.setDuracion(rs.getInt("duracion"));
             c.setGenero(rs.getString("genero"));
-            c.setPopularidad(rs.getInt("popularidad"));
             c.setNumeroReproducciones(rs.getInt("numero_reproducciones"));
             c.setUrlAudio(rs.getString("url_audio"));
 
@@ -257,7 +203,6 @@ public static List<Cancion> listarCancionesPorAlbum(int albumId) {
             c.setTitulo(rs.getString("titulo"));
             c.setDuracion(rs.getInt("duracion"));
             c.setGenero(rs.getString("genero"));
-            c.setPopularidad(rs.getInt("popularidad"));
             c.setNumeroReproducciones(rs.getInt("numero_reproducciones"));
             c.setUrlAudio(rs.getString("url_audio"));
 
@@ -298,7 +243,6 @@ public static List<Cancion> buscarCancionesPorTitulo(String texto) {
             c.setTitulo(rs.getString("titulo"));
             c.setDuracion(rs.getInt("duracion"));
             c.setGenero(rs.getString("genero"));
-            c.setPopularidad(rs.getInt("popularidad"));
             c.setNumeroReproducciones(rs.getInt("numero_reproducciones"));
             c.setUrlAudio(rs.getString("url_audio"));
 

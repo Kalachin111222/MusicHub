@@ -51,4 +51,35 @@ public class DALAlbum {
     return urlImagen;
 }
 
+    public static int obtenerDuracionTotalAlbum(int albumId) {
+    int duracionTotal = 0;
+
+    try {
+        cn = conexion.realizarconexion();
+
+        String sql = "{call sp_obtener_duracion_total_album(?)}";
+        cs = cn.prepareCall(sql);
+        cs.setInt(1, albumId);
+
+        rs = cs.executeQuery();
+
+        if (rs.next()) {
+            duracionTotal = rs.getInt("total_duracion");
+        }
+
+    } catch (ClassNotFoundException | SQLException ex) {
+        System.out.println("Error DAL: " + ex.getMessage());
+    } finally {
+        try {
+            if (rs != null) rs.close();
+            if (cs != null) cs.close();
+            if (cn != null) cn.close();
+        } catch (SQLException ex) {
+            System.out.println("Error cerrando recursos: " + ex.getMessage());
+        }
+    }
+
+    return duracionTotal; // en segundos
+}
+
 }
