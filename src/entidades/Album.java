@@ -19,6 +19,7 @@ public class Album {
     private String urlImagen;
     private Artista artista;
     private ArrayList<Cancion> canciones;
+    
 
     public Album() {
         this.canciones = new ArrayList<>();
