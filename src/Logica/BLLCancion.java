@@ -1,10 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package logica;
 
-import listasDinamicas.*;
+import listasDinamicas.CLLCancion;
+import listasDinamicas.CLLUsuario;
 import Datos.DALCancion;
 import entidades.Cancion;
 import entidades.Artista;
@@ -13,13 +10,13 @@ import javax.swing.JOptionPane;
 import java.util.List;
 
 /**
+ * Lógica de negocio para Cancion - Integra con DAL
  */
 public class BLLCancion {
     
     
     public static boolean insertarCancion(String titulo, String duracionStr, String genero,
                                          Artista artista, Album album, String urlAudio) {
-        // 1. Validar datos
         if (!validarDatosCancion(titulo, duracionStr, genero, artista)) {
             return false;
         }
@@ -29,7 +26,6 @@ public class BLLCancion {
             return false;
         }
         
-        // 2. Crear canción
         int duracion = Integer.parseInt(duracionStr.trim());
         
         Cancion nuevaCancion = new Cancion();
@@ -41,7 +37,6 @@ public class BLLCancion {
         nuevaCancion.setUrlAudio(urlAudio.trim());
         nuevaCancion.setNumeroReproducciones(0);
         
-        // 3. Insertar en BD
         String mensaje = DALCancion.insertarCancion(nuevaCancion);
         
         if (mensaje != null) {
@@ -52,10 +47,27 @@ public class BLLCancion {
         mostrarExito("Canción agregada exitosamente.");
         return true;
     }
+   
+    
+    public static Cancion obtenerCancionPorId(int id) {
+        if (id <= 0) {
+            mostrarError("ID de canción inválido.");
+            return null;
+        }
         
+        Cancion cancion = DALCancion.obtenerCancionPorId(id);
+        
+        if (cancion == null) {
+            mostrarAdvertencia("No se encontró la canción con ID: " + id);
+        }
+        
+        return cancion;
+    }
+    
+    
     public static boolean actualizarCancion(Cancion cancion, String titulo, String duracionStr,
                                            String genero, Artista artista, Album album, String urlAudio) {
-        // 1. Validar datos
+
         if (!validarDatosCancion(titulo, duracionStr, genero, artista)) {
             return false;
         }
@@ -65,7 +77,7 @@ public class BLLCancion {
             return false;
         }
         
-        // 2. Actualizar datos
+
         int duracion = Integer.parseInt(duracionStr.trim());
         
         cancion.setTitulo(titulo.trim());
@@ -75,7 +87,6 @@ public class BLLCancion {
         cancion.setAlbum(album);
         cancion.setUrlAudio(urlAudio.trim());
         
-        // 3. Actualizar en BD
         String mensaje = DALCancion.actualizarCancion(cancion);
         
         if (mensaje != null) {
@@ -87,28 +98,18 @@ public class BLLCancion {
         return true;
     }
     
+    
     public static List<Cancion> buscarCanciones(String criterio, String valor) {
         if (!validarCriterioBusqueda(valor)) {
             return null;
         }
         
-        List<Cancion> resultados = null;
+        List<Cancion> resultados = DALCancion.buscarCancionesPorTitulo(valor.trim());
         
-        switch (criterio.toLowerCase()) {
-            case "titulo":
-                resultados = DALCancion.buscarCancionesPorTitulo(valor.trim());
-                break;
-            case "genero":
-                resultados = DALCancion.buscarCancionesPorTitulo(valor.trim()); // Buscar por título que contenga el género
-                break;
-            default:
-                mostrarError("Criterio de búsqueda no válido.");
-                return null;
-        }
-        
-        // Guardar en CLL
         if (resultados != null && !resultados.isEmpty()) {
             CLLCancion.getInstancia().setListaCanciones(resultados);
+        } else {
+            mostrarAdvertencia("No se encontraron canciones con ese criterio.");
         }
         
         return resultados;
@@ -146,8 +147,62 @@ public class BLLCancion {
         return canciones;
     }
     
+    
     public static List<Cancion> listarCancionesPorArtista(int idArtista) {
+        if (idArtista <= 0) {
+            mostrarError("ID de artista inválido.");
+            return null;
+        }
+        
         List<Cancion> canciones = DALCancion.listarCancionesPorArtista(idArtista);
+        
+        if (canciones != null && !canciones.isEmpty()) {
+            CLLCancion.getInstancia().setListaCanciones(canciones);
+        } else {
+            mostrarAdvertencia("El artista no tiene canciones.");
+        }
+        
+        return canciones;
+    }
+    
+    
+    public static List<Cancion> listarCancionesPorAlbum(int idAlbum) {
+        if (idAlbum <= 0) {
+            mostrarError("ID de álbum inválido.");
+            return null;
+        }
+        
+        List<Cancion> canciones = DALCancion.listarCancionesPorAlbum(idAlbum);
+        
+        if (canciones != null && !canciones.isEmpty()) {
+            CLLCancion.getInstancia().setListaCanciones(canciones);
+        } else {
+            mostrarAdvertencia("El álbum no tiene canciones.");
+        }
+        
+        return canciones;
+    }
+    
+    
+    public static boolean incrementarReproducciones(int cancionId) {
+        if (cancionId <= 0) {
+            mostrarError("ID de canción inválido.");
+            return false;
+        }
+        
+        String mensaje = DALCancion.incrementarReproducciones(cancionId);
+        
+        if (mensaje != null) {
+            System.out.println("Advertencia al incrementar reproducciones: " + mensaje);
+            return false;
+        }
+        
+        return true;
+    }
+    
+    
+    public static List<Cancion> listarCancionesMasPopulares() {
+        List<Cancion> canciones = DALCancion.listarCancionesMasPopulares();
         
         if (canciones != null && !canciones.isEmpty()) {
             CLLCancion.getInstancia().setListaCanciones(canciones);
@@ -156,30 +211,62 @@ public class BLLCancion {
         return canciones;
     }
     
-    public static List<Cancion> listarCancionesPorAlbum(int idAlbum) {
-        List<Cancion> canciones = DALCancion.listarCancionesPorAlbum(idAlbum);
+    
+    public static List<Cancion> listarCancionesPorGeneroNoEscuchadas(int usuarioId, String genero) {
+  
+        if (!CLLUsuario.getInstancia().hayUsuarioLogueado()) {
+            mostrarError("Debe iniciar sesión.");
+            return null;
+        }
+        
+        if (usuarioId <= 0) {
+            mostrarError("ID de usuario inválido.");
+            return null;
+        }
+        
+ 
+        if (genero == null || genero.trim().isEmpty()) {
+            mostrarError("El género no puede estar vacío.");
+            return null;
+        }
+        
+        List<Cancion> canciones = DALCancion.listarCancionesPorGeneroNoEscuchadas(usuarioId, genero.trim());
         
         if (canciones != null && !canciones.isEmpty()) {
             CLLCancion.getInstancia().setListaCanciones(canciones);
+        } else {
+            mostrarAdvertencia("No hay canciones nuevas de este género para ti.");
         }
         
         return canciones;
     }
+    
+    
+    public static String obtenerUrlAudioCancion(int cancionId) {
+        if (cancionId <= 0) {
+            mostrarError("ID de canción inválido.");
+            return null;
+        }
         
+        String urlAudio = DALCancion.obtenerUrlAudioCancion(cancionId);
+        
+        if (urlAudio == null || urlAudio.trim().isEmpty()) {
+            mostrarError("No se encontró la URL de audio para esta canción.");
+            return null;
+        }
+        
+        return urlAudio;
+    }
+    
+    
     public static boolean reproducirCancion(Cancion cancion, int idUsuario) {
         if (!validarReproduccion(cancion, idUsuario)) {
             return false;
         }
         
-        // Establecer como canción actual
         CLLCancion.getInstancia().setCancionActual(cancion);
         
-        // Incrementar reproducciones
-        String mensaje = DALCancion.incrementarReproducciones(cancion.getId());
-        
-        if (mensaje != null) {
-            System.out.println("Advertencia: " + mensaje);
-        }
+        incrementarReproducciones(cancion.getId());
         
         return true;
     }
@@ -197,7 +284,60 @@ public class BLLCancion {
         
         return true;
     }
+    
+    
+    public static Cancion siguienteCancion() {
+        Cancion siguiente = CLLCancion.getInstancia().siguienteCancion();
         
+        if (siguiente == null) {
+            mostrarAdvertencia("No hay más canciones en la lista.");
+        }
+        
+        return siguiente;
+    }
+    
+    public static Cancion anteriorCancion() {
+        Cancion anterior = CLLCancion.getInstancia().anteriorCancion();
+        
+        if (anterior == null) {
+            mostrarAdvertencia("No hay canciones anteriores en la lista.");
+        }
+        
+        return anterior;
+    }
+    
+    public static void detenerReproduccion() {
+        CLLCancion.getInstancia().detenerReproduccion();
+    }
+    
+    public static Cancion getCancionActual() {
+        return CLLCancion.getInstancia().getCancionActual();
+    }
+    
+    public static boolean hayCancionReproduciendose() {
+        return CLLCancion.getInstancia().hayCancionReproduciendose();
+    }
+    
+    
+    public static void agregarALista(Cancion cancion) {
+        if (cancion != null) {
+            CLLCancion.getInstancia().agregarALista(cancion);
+        }
+    }
+    
+    public static void limpiarLista() {
+        CLLCancion.getInstancia().limpiarLista();
+    }
+    
+    public static List<Cancion> getListaCanciones() {
+        return CLLCancion.getInstancia().getListaCanciones();
+    }
+    
+    public static int getTamanioLista() {
+        return CLLCancion.getInstancia().getTamanioLista();
+    }
+    
+    
     private static boolean validarDatosCancion(String titulo, String duracionStr,
                                               String genero, Artista artista) {
         if (!validarTitulo(titulo)) {
@@ -288,7 +428,9 @@ public class BLLCancion {
         
         return true;
     }
-        
+    
+    // ===== UTILIDADES =====
+    
     private static void mostrarError(String mensaje) {
         JOptionPane.showMessageDialog(
             null,

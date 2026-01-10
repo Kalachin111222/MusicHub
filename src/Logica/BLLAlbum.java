@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package logica;
 
 import listasDinamicas.CLLAlbum;
@@ -28,6 +24,41 @@ public class BLLAlbum {
         }
         
         return urlImagen;
+    }
+    
+    
+    public static int obtenerDuracionTotalAlbum(int albumId) {
+        if (!validarIdAlbum(albumId)) {
+            return 0;
+        }
+        
+        int duracionTotal = DALAlbum.obtenerDuracionTotalAlbum(albumId);
+        
+        if (duracionTotal <= 0) {
+            mostrarAdvertencia("El álbum no tiene canciones o la duración es 0.");
+            return 0;
+        }
+        
+        return duracionTotal;
+    }
+    
+    
+    public static String obtenerDuracionFormateada(int albumId) {
+        int segundosTotales = obtenerDuracionTotalAlbum(albumId);
+        
+        if (segundosTotales <= 0) {
+            return "00:00";
+        }
+        
+        int horas = segundosTotales / 3600;
+        int minutos = (segundosTotales % 3600) / 60;
+        int segundos = segundosTotales % 60;
+        
+        if (horas > 0) {
+            return String.format("%d:%02d:%02d", horas, minutos, segundos);
+        } else {
+            return String.format("%d:%02d", minutos, segundos);
+        }
     }
     
     
@@ -88,7 +119,7 @@ public class BLLAlbum {
         
         return true;
     }
-  
+   
     
     private static void mostrarError(String mensaje) {
         JOptionPane.showMessageDialog(
