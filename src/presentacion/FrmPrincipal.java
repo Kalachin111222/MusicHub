@@ -48,7 +48,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
         cargarColaLateral(); 
         new javafx.embed.swing.JFXPanel();
-        configurarUsuarioActual();
     }
     
     private void configurarUsuarioActual() {
@@ -71,6 +70,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private void inicializarComponentes() {
         gestorAudio = new GestorAudio();
 
+        // 1. Timer de la barra de progreso
         timerProgreso = new javax.swing.Timer(500, new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -78,8 +78,9 @@ public class FrmPrincipal extends javax.swing.JFrame {
             }
         });
 
-        historialPaneles = new Pila<>();
-
+        // 2. Configuración visual de Scrolls
+        historialPaneles = new estructuras.Pila<>();
+        
         scpPlaylists.setBorder(null);
         scpPlaylists.getVerticalScrollBar().setUnitIncrement(16);
         scpPlaylists.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -90,42 +91,55 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
         jScrollPane1.setPreferredSize(new Dimension(755, 513));
         jScrollPane1.setMinimumSize(new Dimension(755, 513));
-
         jScrollPane1.setBorder(null);
         jScrollPane1.getVerticalScrollBar().setUnitIncrement(16);
-
         jScrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         jScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
+        // 3. Inicializar Paneles
         panHome = new panHome(this);
-
-        estructuras.ListaCircularDoble<Cancion> datosTest = new estructuras.ListaCircularDoble<>();
-        datosTest.insertar(new Cancion(
-            "Flowers", 
-            200, 
-            "Pop", 
-            "Miley Cyrus", 
-            "Endless Summer", 
-            10, 
-            "https://drive.google.com/uc?export=download&id=1N5-90TXzHKnn5uVT7KZlo2P9ZKsHmLbR", 
-            "https://drive.google.com/uc?export=download&id=1cKZVpjAXt1BWSLpJotVUFRSH8DpEHA99", 
-            true
-        ));
-
-        panHome.setListaRecomendadas(datosTest);
-        panHome.setListaPopulares(datosTest);
-
         panPlaylist = new panPlaylist(this);
         panArtista = new panArtista(this);
         panPerfil = new panPerfil(this);
 
+        // ---------------------------------------------------------
+        // 4. CARGA DE DATOS REALES DESDE LA BASE DE DATOS
+        // ---------------------------------------------------------
+        
+        // A) Cargar Usuario
+        configurarUsuarioActual();
+
+        // B) Cargar Canciones desde BLL
+        // Obtenemos la lista normal de Java desde tu BLL
+        java.util.List<entidades.Cancion> cancionesBD = logica.BLLCancion.obtenerCancionesParaMostrar();
+        
+        // Creamos tu lista personalizada
+        estructuras.ListaCircularDoble<entidades.Cancion> listaParaPaneles = new estructuras.ListaCircularDoble<>();
+
+        if (cancionesBD != null && !cancionesBD.isEmpty()) {
+            // Convertimos la List de Java a tu ListaCircularDoble
+            for (entidades.Cancion c : cancionesBD) {
+                listaParaPaneles.insertar(c);
+            }
+        } else {
+            System.out.println("Advertencia: No se encontraron canciones en la BD o error de conexión.");
+            // Opcional: Aquí podrías dejar los datos falsos como respaldo si la BD falla
+        }
+
+        // Asignamos la lista real a los paneles
+        panHome.setListaRecomendadas(listaParaPaneles);
+        panHome.setListaPopulares(listaParaPaneles); 
+        // Nota: Idealmente crearías dos listas distintas en el BLL (una para pop y otra recomendados)
+        // pero por ahora usamos la misma para probar que carga.
+
+        // 5. Mostrar panel inicial
         mostrarPanel(panHome);
 
-        // --- LÓGICA CORREGIDA PARA ARRASTRAR LA BARRA ---
+        // 6. Listener para la barra de progreso (Click y Arrastre)
         MouseAdapter controlBarra = new MouseAdapter() {
             private void saltarAPosicion(MouseEvent e) {
                 if (gestorAudio == null || gestorAudio.getDuracionTotal() <= 0) return;
-
+                
                 int mouseX = e.getX();
                 int anchoBarra = pgbProgreso.getWidth();
                 
@@ -135,24 +149,18 @@ public class FrmPrincipal extends javax.swing.JFrame {
                     double segundoDestino = porcentaje * duracionTotal;
                     
                     gestorAudio.saltarA(segundoDestino);
-                    
                     pgbProgreso.setValue((int) segundoDestino);
                     lblTmpActual.setText(obtenerTiempoFormateado(segundoDestino));
                 }
             }
 
             @Override
-            public void mousePressed(MouseEvent e) {
-                saltarAPosicion(e);
-            }
+            public void mousePressed(MouseEvent e) { saltarAPosicion(e); }
             
             @Override
-            public void mouseDragged(MouseEvent e) {
-                saltarAPosicion(e);
-            }
+            public void mouseDragged(MouseEvent e) { saltarAPosicion(e); }
         };
 
-        // Asignamos ambos listeners para soportar clic y arrastre
         pgbProgreso.addMouseListener(controlBarra);
         pgbProgreso.addMouseMotionListener(controlBarra);
     }
@@ -196,7 +204,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         // 2. FOTO (Lo nuevo) 📸
         // Revisa en tu diseño cuál es el JLabel de la foto grande. 
         // Asumiré que es 'jLabel3' (el cuadro gris a la izquierda de los textos).
-        cargarImagenPortada(c.getUrlPortada(), jLabel3);
+//        cargarImagenPortada(c.getUrlPortada(), jLabel3);
         
         // 3. Audio
         if (gestorAudio == null) gestorAudio = new GestorAudio();

@@ -27,7 +27,6 @@ public class Cancion {
     private boolean activa;
     private String urlAudio;
     
-    private String urlPortada;
     
     private Artista artista;
     private Album album;
@@ -38,13 +37,12 @@ public class Cancion {
     public Cancion() {
     }
 
-    public Cancion(String titulo, int duracion, String genero, String nombreArtista, String nombreAlbum, int popularidad, String urlAudio, String urlPortada, boolean activa) {
+    public Cancion(String titulo, int duracion, String genero, String nombreArtista, String nombreAlbum, int popularidad, String urlAudio, boolean activa) {
         this.id = 0;
         this.titulo = titulo;
         this.duracion = duracion;
         this.genero = genero;
         this.urlAudio = urlAudio;
-        this.urlPortada = urlPortada;
         this.activa = activa;
         
         this.artista = new Artista(); 
@@ -57,7 +55,7 @@ public class Cancion {
         this.numeroReproducciones = 0;
     }
 
-    public Cancion(int id, String titulo, int duracion, String genero, Artista artista, Album album, int popularidad, int numeroReproducciones, String urlAudio, String urlPortada, boolean activa) {
+    public Cancion(int id, String titulo, int duracion, String genero, Artista artista, Album album, int popularidad, int numeroReproducciones, String urlAudio, boolean activa) {
         this.id = id;
         this.titulo = titulo;
         this.duracion = duracion;
@@ -67,7 +65,6 @@ public class Cancion {
         this.popularidad = popularidad;
         this.numeroReproducciones = numeroReproducciones;
         this.urlAudio = urlAudio;
-        this.urlPortada = urlPortada;
         this.activa = activa;
     }
 
@@ -104,13 +101,6 @@ public class Cancion {
     }
     public void setUrlAudio(String urlAudio) {
         this.urlAudio = urlAudio; 
-    }
-    
-    public String getUrlPortada() {
-        return urlPortada; 
-    }
-    public void setUrlPortada(String urlPortada) {
-        this.urlPortada = urlPortada; 
     }
 
     public boolean isActiva() {
