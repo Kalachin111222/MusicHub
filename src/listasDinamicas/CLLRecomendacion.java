@@ -29,7 +29,6 @@ public class CLLRecomendacion {
     
     public void setListaRecomendaciones(List<Recomendacion> recomendaciones) {
         this.listaRecomendaciones = new ArrayList<>(recomendaciones);
-        // Extraer las canciones de las recomendaciones
         cancionesRecomendadas.clear();
         for (Recomendacion rec : recomendaciones) {
             cancionesRecomendadas.add(rec.getCancion());
