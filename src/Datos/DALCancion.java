@@ -442,6 +442,37 @@ public static List<Cancion> listarCancionesPorGeneroNoEscuchadas(int usuarioId, 
     return lista;
 }
 
+public static String obtenerUrlAudioCancion(int cancionId) {
+
+    String urlAudio = null;
+
+    try {
+        cn = conexion.realizarconexion();
+
+        String sql = "{call sp_obtener_url_audio_cancion(?)}";
+        cs = cn.prepareCall(sql);
+        cs.setInt(1, cancionId);
+
+        rs = cs.executeQuery();
+
+        if (rs.next()) {
+            urlAudio = rs.getString("url_audio");
+        }
+
+    } catch (ClassNotFoundException | SQLException ex) {
+        System.out.println("Error DAL: " + ex.getMessage());
+    } finally {
+        try {
+            if (rs != null) rs.close();
+            if (cs != null) cs.close();
+            if (cn != null) cn.close();
+        } catch (SQLException ex) {
+            System.out.println("Error cerrando recursos: " + ex.getMessage());
+        }
+    }
+
+    return urlAudio;
+}
 
 
 
