@@ -16,6 +16,7 @@ public class Album {
     private int id;
     private String titulo;
     private int anio;
+    private String urlImagen;
     private Artista artista;
     private ArrayList<Cancion> canciones;
 
@@ -31,10 +32,11 @@ public class Album {
         this.canciones = new ArrayList<>();
     }
     
-    public Album(int id, String titulo, int añoLanzamiento, Artista artista) {
+    public Album(int id, String titulo, int añoLanzamiento, Artista artista,String urlImagen) {
         this.id = id;
         this.titulo = titulo;
         this.anio = anio;
+        this.urlImagen=urlImagen;
         this.artista = artista;
         this.canciones = new ArrayList<>();
     }
@@ -63,6 +65,15 @@ public class Album {
         this.anio = anio;
     }
 
+    public String getUrlImagen() {
+        return urlImagen;
+    }
+
+    public void setUrlImagen(String urlImagen) {
+        this.urlImagen = urlImagen;
+    }
+
+    
     public Artista getArtista() {
         return artista;
     }
