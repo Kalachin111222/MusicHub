@@ -24,34 +24,29 @@ public class Cancion {
     private String titulo;
     private int duracion;
     private String genero;
-    private boolean activa;
     private String urlAudio;
     
     
     private Artista artista;
     private Album album;
-    
-    private int popularidad; 
+     
     private int numeroReproducciones;
 
     public Cancion() {
     }
 
-    public Cancion(String titulo, int duracion, String genero, String nombreArtista, String nombreAlbum, int popularidad, String urlAudio, boolean activa) {
+    public Cancion(String titulo, int duracion, String genero, String nombreArtista, String nombreAlbum, String urlAudio) {
         this.id = 0;
         this.titulo = titulo;
         this.duracion = duracion;
         this.genero = genero;
         this.urlAudio = urlAudio;
-        this.activa = activa;
         
         this.artista = new Artista(); 
         this.artista.setNombre(nombreArtista);
         
         this.album = new Album();
         this.album.setTitulo(nombreAlbum);
-        
-        this.popularidad = popularidad;
         this.numeroReproducciones = 0;
     }
 
@@ -62,10 +57,8 @@ public class Cancion {
         this.genero = genero;
         this.artista = artista;
         this.album = album;
-        this.popularidad = popularidad;
         this.numeroReproducciones = numeroReproducciones;
         this.urlAudio = urlAudio;
-        this.activa = activa;
     }
 
     public int getId() {
@@ -103,12 +96,6 @@ public class Cancion {
         this.urlAudio = urlAudio; 
     }
 
-    public boolean isActiva() {
-        return activa; 
-    }
-    public void setActiva(boolean activa) {
-        this.activa = activa; 
-    }
     
     public Artista getArtista() {
         return artista; 
@@ -122,13 +109,6 @@ public class Cancion {
     }
     public void setAlbum(Album album) {
         this.album = album; 
-    }
-    
-    public int getPopularidad() {
-        return popularidad; 
-    }
-    public void setPopularidad(int popularidad) {
-        this.popularidad = popularidad; 
     }
     
     public int getNumeroReproducciones() {

@@ -39,7 +39,6 @@ public class BLLCancion {
         nuevaCancion.setArtista(artista);
         nuevaCancion.setAlbum(album);
         nuevaCancion.setUrlAudio(urlAudio.trim());
-        nuevaCancion.setPopularidad(0);
         nuevaCancion.setNumeroReproducciones(0);
         
         // 3. Insertar en BD
@@ -87,45 +86,6 @@ public class BLLCancion {
         mostrarExito("Canción actualizada exitosamente.");
         return true;
     }
-        
-    public static boolean desactivarCancion(int idCancion) {
-        int confirmacion = JOptionPane.showConfirmDialog(
-            null,
-            "¿Está seguro de desactivar esta canción?",
-            "Confirmar",
-            JOptionPane.YES_NO_OPTION
-        );
-        
-        if (confirmacion != JOptionPane.YES_OPTION) {
-            return false;
-        }
-        
-        String mensaje = DALCancion.desactivarCancion(idCancion);
-        
-        if (mensaje != null) {
-            mostrarError("Error al desactivar: " + mensaje);
-            return false;
-        }
-        
-        mostrarExito("Canción desactivada exitosamente.");
-        return true;
-    }
-    
-    public static boolean activarCancion(int idCancion) {
-        String mensaje = DALCancion.activarCancion(idCancion);
-        
-        if (mensaje != null) {
-            mostrarError("Error al activar: " + mensaje);
-            return false;
-        }
-        
-        mostrarExito("Canción activada exitosamente.");
-        return true;
-    }
-        
-    public static Cancion obtenerCancionPorId(int id) {
-        return DALCancion.obtenerCancionPorId(id);
-    }
     
     public static List<Cancion> buscarCanciones(String criterio, String valor) {
         if (!validarCriterioBusqueda(valor)) {
@@ -172,9 +132,6 @@ public class BLLCancion {
         switch (criterio.toLowerCase()) {
             case "titulo":
                 canciones.sort((c1, c2) -> c1.getTitulo().compareToIgnoreCase(c2.getTitulo()));
-                break;
-            case "popularidad":
-                canciones.sort((c1, c2) -> Integer.compare(c2.getPopularidad(), c1.getPopularidad()));
                 break;
             case "reproducciones":
                 canciones.sort((c1, c2) -> Integer.compare(c2.getNumeroReproducciones(), c1.getNumeroReproducciones()));
