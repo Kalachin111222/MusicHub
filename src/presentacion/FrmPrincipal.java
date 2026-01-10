@@ -48,19 +48,36 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
         cargarColaLateral(); 
         new javafx.embed.swing.JFXPanel();
+        configurarUsuarioActual();
+    }
+    
+    private void configurarUsuarioActual() {
+        // Usamos tu BLLUsuario para preguntar
+        if (logica.BLLUsuario.hayUsuarioLogueado()) {
+            entidades.Usuario usuario = logica.BLLUsuario.getUsuarioActual();
+            
+            // AQUÍ: Actualiza la interfaz con el nombre del usuario
+            // Por ejemplo, si tienes un label en el menú lateral o arriba:
+            // lblNombreUsuario.setText(usuario.getNombre());
+            
+            System.out.println("Usuario logueado: " + usuario.getNombre());
+        } else {
+            // Modo Invitado (No restringimos nada, solo avisamos)
+            // lblNombreUsuario.setText("Invitado");
+            System.out.println("Modo Invitado");
+        }
     }
     
     private void inicializarComponentes() {
-        gestorAudio = new   GestorAudio();
+        gestorAudio = new GestorAudio();
 
-        // 2. Configuramos el Timer para que actualice la barra cada 500ms (medio segundo)
         timerProgreso = new javax.swing.Timer(500, new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 actualizarBarraGUI();
             }
         });
-        
+
         historialPaneles = new Pila<>();
 
         scpPlaylists.setBorder(null);
@@ -71,28 +88,18 @@ public class FrmPrincipal extends javax.swing.JFrame {
         scpColaHistorial.getVerticalScrollBar().setUnitIncrement(16);
         scpColaHistorial.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-
         jScrollPane1.setPreferredSize(new Dimension(755, 513));
         jScrollPane1.setMinimumSize(new Dimension(755, 513));
-        
+
         jScrollPane1.setBorder(null);
         jScrollPane1.getVerticalScrollBar().setUnitIncrement(16);
-        
-        // Políticas: Vertical según se necesite, Horizontal nunca.
+
         jScrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         jScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-
-        // ---------------------------------------------------------
-        // 4. INICIALIZACIÓN DE PANELES Y DATOS
-        // ---------------------------------------------------------
         panHome = new panHome(this);
-        
-        // Carga de datos falsos para probar el carrusel
+
         estructuras.ListaCircularDoble<Cancion> datosTest = new estructuras.ListaCircularDoble<>();
-        // Constructor: (Titulo, Duracion, Genero, Artista, Album, Popularidad, URL, Activa)
-        // Reemplaza con el enlace mágico que probamos antes
-        // He puesto el ID de la canción que probamos antes
         datosTest.insertar(new Cancion(
             "Flowers", 
             200, 
@@ -100,21 +107,54 @@ public class FrmPrincipal extends javax.swing.JFrame {
             "Miley Cyrus", 
             "Endless Summer", 
             10, 
-            "https://drive.google.com/uc?export=download&id=1N5-90TXzHKnn5uVT7KZlo2P9ZKsHmLbR", // Link Audio (No tocar)
-            "https://drive.google.com/uc?export=download&id=1cKZVpjAXt1BWSLpJotVUFRSH8DpEHA99", // <--- ¡AQUÍ PEGASTE EL NUEVO!
+            "https://drive.google.com/uc?export=download&id=1N5-90TXzHKnn5uVT7KZlo2P9ZKsHmLbR", 
+            "https://drive.google.com/uc?export=download&id=1cKZVpjAXt1BWSLpJotVUFRSH8DpEHA99", 
             true
         ));
-        
+
         panHome.setListaRecomendadas(datosTest);
         panHome.setListaPopulares(datosTest);
-        
-        // Instanciar los otros paneles para tenerlos listos y evitar errores null
+
         panPlaylist = new panPlaylist(this);
         panArtista = new panArtista(this);
         panPerfil = new panPerfil(this);
 
-        // Mostrar el panel inicial
         mostrarPanel(panHome);
+
+        // --- LÓGICA CORREGIDA PARA ARRASTRAR LA BARRA ---
+        MouseAdapter controlBarra = new MouseAdapter() {
+            private void saltarAPosicion(MouseEvent e) {
+                if (gestorAudio == null || gestorAudio.getDuracionTotal() <= 0) return;
+
+                int mouseX = e.getX();
+                int anchoBarra = pgbProgreso.getWidth();
+                
+                if (anchoBarra > 0) {
+                    double porcentaje = (double) mouseX / anchoBarra;
+                    double duracionTotal = gestorAudio.getDuracionTotal();
+                    double segundoDestino = porcentaje * duracionTotal;
+                    
+                    gestorAudio.saltarA(segundoDestino);
+                    
+                    pgbProgreso.setValue((int) segundoDestino);
+                    lblTmpActual.setText(obtenerTiempoFormateado(segundoDestino));
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                saltarAPosicion(e);
+            }
+            
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                saltarAPosicion(e);
+            }
+        };
+
+        // Asignamos ambos listeners para soportar clic y arrastre
+        pgbProgreso.addMouseListener(controlBarra);
+        pgbProgreso.addMouseMotionListener(controlBarra);
     }
     
     private void cargarImagenPortada(String url, javax.swing.JLabel label) {
@@ -150,8 +190,8 @@ public class FrmPrincipal extends javax.swing.JFrame {
         System.out.println("--- Reproduciendo: " + c.getTitulo() + " ---");
         
         // 1. Textos
-        jLabel4.setText(c.getTitulo());
-        jLabel5.setText(c.getArtista() != null ? c.getArtista().getNombre() : "Desconocido");
+        lblTitulo.setText(c.getTitulo());
+        lblArtista.setText(c.getArtista() != null ? c.getArtista().getNombre() : "Desconocido");
         
         // 2. FOTO (Lo nuevo) 📸
         // Revisa en tu diseño cuál es el JLabel de la foto grande. 
@@ -163,22 +203,24 @@ public class FrmPrincipal extends javax.swing.JFrame {
         gestorAudio.reproducir(c.getUrlAudio());
         
         timerProgreso.start();
+        
+        btnPlayPausar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/pausa.png")));
     }
 
     // Este método se ejecuta automáticamente cada 0.5 segundos gracias al Timer
     private void actualizarBarraGUI() {
-        if (gestorAudio.estaReproduciendo()) {
+        // Verificamos que el gestor exista y esté reproduciendo (o pausado con canción cargada)
+        if (gestorAudio != null && gestorAudio.getDuracionTotal() > 0) {
             double actual = gestorAudio.getTiempoActual();
             double total = gestorAudio.getDuracionTotal();
-            
-            // Evitar división por cero si la canción apenas está cargando
-            if (total > 0) {
-                pgbProgreso.setMaximum((int) total);
-                pgbProgreso.setValue((int) actual);
-                
-                // Debug para ver si avanza en la consola
-                // System.out.println(actual + " / " + total);
-            }
+
+            // 1. Actualizar la barra visual
+            pgbProgreso.setMaximum((int) total);
+            pgbProgreso.setValue((int) actual);
+
+            // 2. Actualizar los Textos (ESTO ES LO QUE FALTABA)
+            lblTmpActual.setText(obtenerTiempoFormateado(actual));
+            lblDuracion.setText(obtenerTiempoFormateado(total));
         }
     }
     
@@ -414,6 +456,16 @@ public class FrmPrincipal extends javax.swing.JFrame {
         panContenido2.revalidate();
         panContenido2.repaint();
     }
+    
+    // Método auxiliar para convertir segundos a formato mm:ss
+    private String obtenerTiempoFormateado(double segundos) {
+        int totalSegundos = (int) segundos;
+        int minutos = totalSegundos / 60;
+        int segs = totalSegundos % 60;
+        // Formato %02d asegura que ponga un cero a la izquierda si es menor a 10 (ej: 05)
+        return String.format("%02d:%02d", minutos, segs);
+    }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -431,12 +483,12 @@ public class FrmPrincipal extends javax.swing.JFrame {
         pgbProgreso = new ProgressBarPersonalizada();
         lblDuracion = new javax.swing.JLabel();
         lblTmpActual = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        btnPlayPausar = new BotonPersonalizado(new java.awt.Color(0,0,0), new java.awt.Color(50,50,50), new java.awt.Color(40,40,40));
         jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        btnAnterior = new javax.swing.JButton();
-        btnSiguiente = new javax.swing.JButton();
+        lblTitulo = new javax.swing.JLabel();
+        lblArtista = new javax.swing.JLabel();
+        btnAnterior = new BotonPersonalizado(new java.awt.Color(0,0,0), new java.awt.Color(50,50,50), new java.awt.Color(40,40,40));
+        btnSiguiente = new BotonPersonalizado(new java.awt.Color(0,0,0), new java.awt.Color(50,50,50), new java.awt.Color(40,40,40));
         jPanel1 = new PanelPersonalizado();
         jButton11 = new BotonPersonalizado(new java.awt.Color(25,25,25));
         jTextField2 = new javax.swing.JTextField();
@@ -467,20 +519,25 @@ public class FrmPrincipal extends javax.swing.JFrame {
         lblTmpActual.setForeground(new java.awt.Color(255, 255, 255));
         lblTmpActual.setText("00:00");
 
-        jButton1.setBackground(new java.awt.Color(20, 20, 20));
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/play.png"))); // NOI18N
-        jButton1.setPreferredSize(new java.awt.Dimension(30, 30));
+        btnPlayPausar.setBackground(new java.awt.Color(0, 0, 0));
+        btnPlayPausar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/play.png"))); // NOI18N
+        btnPlayPausar.setPreferredSize(new java.awt.Dimension(30, 30));
+        btnPlayPausar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPlayPausarActionPerformed(evt);
+            }
+        });
 
-        jLabel4.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel4.setText("jLabel4");
+        lblTitulo.setForeground(new java.awt.Color(255, 255, 255));
+        lblTitulo.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        lblTitulo.setText("-- --");
 
-        jLabel5.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel5.setText("jLabel5");
+        lblArtista.setForeground(new java.awt.Color(255, 255, 255));
+        lblArtista.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        lblArtista.setText("-- --");
 
-        btnAnterior.setBackground(new java.awt.Color(20, 20, 20));
-        btnAnterior.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/play.png"))); // NOI18N
+        btnAnterior.setBackground(new java.awt.Color(0, 0, 0));
+        btnAnterior.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/anterior.png"))); // NOI18N
         btnAnterior.setPreferredSize(new java.awt.Dimension(30, 30));
         btnAnterior.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -488,9 +545,14 @@ public class FrmPrincipal extends javax.swing.JFrame {
             }
         });
 
-        btnSiguiente.setBackground(new java.awt.Color(20, 20, 20));
-        btnSiguiente.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/play.png"))); // NOI18N
+        btnSiguiente.setBackground(new java.awt.Color(0, 0, 0));
+        btnSiguiente.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/siguiente.png"))); // NOI18N
         btnSiguiente.setPreferredSize(new java.awt.Dimension(30, 30));
+        btnSiguiente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSiguienteActionPerformed(evt);
+            }
+        });
 
         jPanel1.setBackground(new java.awt.Color(25, 25, 25));
 
@@ -618,7 +680,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         panFondoLayout.setHorizontalGroup(
             panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panFondoLayout.createSequentialGroup()
-                .addGap(592, 592, 592)
+                .addGap(589, 589, 589)
                 .addComponent(btnHome)
                 .addGap(18, 18, 18)
                 .addComponent(btnBuscar)
@@ -630,18 +692,18 @@ public class FrmPrincipal extends javax.swing.JFrame {
                 .addGroup(panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panFondoLayout.createSequentialGroup()
                         .addGap(6, 6, 6)
-                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(12, 12, 12)
                         .addGroup(panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
-                            .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(29, 29, 29)
+                            .addComponent(lblArtista, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
+                            .addComponent(lblTitulo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(50, 50, 50)
                         .addGroup(panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(panFondoLayout.createSequentialGroup()
                                 .addGap(212, 212, 212)
                                 .addComponent(btnAnterior, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
-                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(btnPlayPausar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(btnSiguiente, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -650,12 +712,12 @@ public class FrmPrincipal extends javax.swing.JFrame {
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(lblDuracion))
                                 .addComponent(pgbProgreso, javax.swing.GroupLayout.PREFERRED_SIZE, 550, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(panFondoLayout.createSequentialGroup()
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(30, 30, 30))
         );
@@ -681,24 +743,25 @@ public class FrmPrincipal extends javax.swing.JFrame {
                             .addGroup(panFondoLayout.createSequentialGroup()
                                 .addGroup(panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(panFondoLayout.createSequentialGroup()
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 2, Short.MAX_VALUE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addGroup(panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(btnPlayPausar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                                             .addComponent(btnAnterior, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                                             .addComponent(btnSiguiente, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                                         .addGap(12, 12, 12)
                                         .addComponent(pgbProgreso, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(panFondoLayout.createSequentialGroup()
-                                        .addComponent(jLabel4)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(jLabel5)))
+                                        .addComponent(lblTitulo)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(lblArtista)
+                                        .addGap(0, 0, Short.MAX_VALUE)))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(lblTmpActual, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(lblDuracion))
                                 .addGap(49, 49, 49))
                             .addGroup(panFondoLayout.createSequentialGroup()
-                                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))))
         );
 
@@ -727,6 +790,28 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private void btnHistorialActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHistorialActionPerformed
         cargarHistorialLateral();
     }//GEN-LAST:event_btnHistorialActionPerformed
+
+    private void btnPlayPausarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPlayPausarActionPerformed
+        if (gestorAudio == null) return; // Si no hay gestor, no hacemos nada
+
+        // 1. Ordenamos al gestor que cambie el estado (Play <-> Pause)
+        gestorAudio.pausar(); 
+        
+        // 2. Cambiamos el icono según el nuevo estado
+        if (gestorAudio.estaReproduciendo()) {
+            // Si está sonando, mostramos el botón de "Pausa"
+            // (Asegúrate de tener una imagen 'pausa.png' en tu carpeta)
+            btnPlayPausar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/play.png")));
+            
+        } else {
+            // Si está quieto, mostramos el botón de "Play"
+            btnPlayPausar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/pausa.png")));
+        }
+    }//GEN-LAST:event_btnPlayPausarActionPerformed
+
+    private void btnSiguienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSiguienteActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnSiguienteActionPerformed
 
     /**
      * @param args the command line arguments
@@ -770,21 +855,21 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private javax.swing.JButton btnCola;
     private javax.swing.JButton btnHistorial;
     private javax.swing.JButton btnHome;
+    private javax.swing.JButton btnPlayPausar;
     private javax.swing.JButton btnSiguiente;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton11;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
+    private javax.swing.JLabel lblArtista;
     private javax.swing.JLabel lblDuracion;
+    private javax.swing.JLabel lblTitulo;
     private javax.swing.JLabel lblTmpActual;
     private javax.swing.JPanel panContenido;
     private javax.swing.JPanel panContenido2;

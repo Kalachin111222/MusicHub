@@ -37,8 +37,13 @@ public class GestorAudio {
             // Debug de errores
             player.setOnError(() -> System.out.println("❌ ERROR: " + player.getError().getMessage()));
             
-            // Debug de estado
-            player.setOnReady(() -> System.out.println("✅ LISTA. Duración: " + player.getTotalDuration().toSeconds()));
+            // --- AQUÍ ESTÁ LA CLAVE ---
+            // Cuando el audio termina de cargar, JavaFX calcula la duración exacta.
+            player.setOnReady(() -> {
+                double segundosReales = media.getDuration().toSeconds();
+                System.out.println("✅ LISTA. Duración real detectada: " + segundosReales);
+            });
+            // --------------------------
             
             player.play();
             enPausa = false;
