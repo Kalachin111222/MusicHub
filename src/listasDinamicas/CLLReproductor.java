@@ -8,66 +8,92 @@ package listasDinamicas;
  *
  * @author Administrador
  */
+
+/*
+ * Motor del reproductor reconstruido con Pila y Cola personalizadas.
+ */
+
+import entidades.Cancion;
+import estructuras.Pila;
 import java.util.ArrayList;
 import java.util.List;
-import entidades.Cancion;
 
 public class CLLReproductor {
+    
     private static final CLLReproductor instancia = new CLLReproductor();
 
-    private List<Cancion> colaReproduccion; 
-    private int indiceActual; 
+    private Pila<Cancion> historial;      // El pasado
+    private Cancion cancionActual;        // El presente
+    private Pila<Cancion> pilaSiguientes; // El futuro
 
     private CLLReproductor() {
-        this.colaReproduccion = new ArrayList<>();
-        this.indiceActual = -1; 
+        this.historial = new Pila<>();
+        this.pilaSiguientes = new Pila<>();
+        this.cancionActual = null;
     }
 
     public static CLLReproductor getInstancia() {
         return instancia;
     }
 
-    // Modifica este método para recibir el índice de la canción que clickeaste
     public void setNuevaCola(List<Cancion> nuevasCanciones, int indiceInicial) {
-        if (nuevasCanciones == null || nuevasCanciones.isEmpty()) {
-            this.colaReproduccion = new ArrayList<>();
-            this.indiceActual = -1;
+        historial.removeAll();
+        pilaSiguientes.removeAll();
+        
+        if (nuevasCanciones == null || nuevasCanciones.isEmpty()) return;
+        if (indiceInicial < 0 || indiceInicial >= nuevasCanciones.size()) indiceInicial = 0;
+
+        // Llenamos historial con las anteriores al click
+        for (int i = 0; i < indiceInicial; i++) {
+            historial.push(nuevasCanciones.get(i));
+        }
+
+        cancionActual = nuevasCanciones.get(indiceInicial);
+
+        // Llenamos la pila de siguientes EN REVERSA para que el tope sea la siguiente canción
+        for (int i = nuevasCanciones.size() - 1; i > indiceInicial; i--) {
+            pilaSiguientes.push(nuevasCanciones.get(i));
+        }
+    }
+
+    public void insertar(Cancion c) {
+        if (cancionActual == null) {
+            cancionActual = c;
         } else {
-            this.colaReproduccion = new ArrayList<>(nuevasCanciones);
-            
-            // Validamos que el índice exista, si no, ponemos 0
-            if (indiceInicial >= 0 && indiceInicial < nuevasCanciones.size()) {
-                this.indiceActual = indiceInicial;
-            } else {
-                this.indiceActual = 0;
-            }
+            // Para insertar al final (cola) usando pilas:
+            Pila<Cancion> aux = new Pila<>();
+            while(!pilaSiguientes.isEmpty()) aux.push(pilaSiguientes.pop());
+            pilaSiguientes.push(c); 
+            while(!aux.isEmpty()) pilaSiguientes.push(aux.pop());
         }
     }
 
     public Cancion obtenerSiguiente() {
-        if (colaReproduccion.isEmpty()) return null;
-        indiceActual = (indiceActual + 1) % colaReproduccion.size();
-        return colaReproduccion.get(indiceActual);
+        if (pilaSiguientes.isEmpty()) return null;
+        if (cancionActual != null) historial.push(cancionActual);
+        cancionActual = pilaSiguientes.pop();
+        return cancionActual;
     }
-
 
     public Cancion obtenerAnterior() {
-        if (colaReproduccion.isEmpty()) return null;
-        indiceActual = (indiceActual - 1 + colaReproduccion.size()) % colaReproduccion.size();
-        return colaReproduccion.get(indiceActual);
+        if (historial.isEmpty()) return null;
+        if (cancionActual != null) pilaSiguientes.push(cancionActual);
+        cancionActual = historial.pop();
+        return cancionActual;
     }
-    
-    public Cancion getActual() {
-        if (indiceActual != -1 && !colaReproduccion.isEmpty()) {
-            return colaReproduccion.get(indiceActual);
+
+    public List<Cancion> getColaFutura() {
+        List<Cancion> listaVisual = new ArrayList<>();
+        Pila<Cancion> aux = new Pila<>();
+        // Clonamos visualmente para no destruir la pila original
+        while(!pilaSiguientes.isEmpty()){
+            Cancion c = pilaSiguientes.pop();
+            listaVisual.add(c);
+            aux.push(c);
         }
-        return null;
+        while(!aux.isEmpty()) pilaSiguientes.push(aux.pop());
+        return listaVisual;
     }
-    
-    // --- AGREGAR ESTE MÉTODO EN TU CLLReproductor ---
-    
-    public List<Cancion> getColaActual() {
-        // Devuelve la lista completa para poder pintarla en el lateral
-        return this.colaReproduccion; 
-    }
+
+    public Cancion getActual() { return cancionActual; }
 }
