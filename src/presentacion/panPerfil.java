@@ -4,12 +4,25 @@
  */
 package presentacion;
 
+import entidades.Usuario;
+import java.awt.Color;
+import java.awt.Window;
+import java.time.LocalDate;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import listasDinamicas.*;
+import logica.BLLUsuario;
 /**
  *
  * @author ArcosArce
  */
 public class panPerfil extends javax.swing.JPanel {
 
+    Usuario u = CLLUsuario.getInstancia().getUsuario();
+    private static final String PLACEHOLDER_DIA = "dd";
+    private static final String PLACEHOLDER_AÑO = "aaaa";
+    private static final Color COLOR_PLACEHOLDER = new Color(153, 153, 153);
+    private static final Color COLOR_TEXTO = new Color(255, 255, 255);
     /**
      * Creates new form panPerfil
      */
@@ -18,7 +31,127 @@ public class panPerfil extends javax.swing.JPanel {
     public panPerfil(FrmPrincipal parent) {
         this.parent = parent;
         initComponents();
+        cargarGeneros();   // 1️⃣ primero cargas el combo
+        mostrar();
     }
+
+    private void cerrarVentana() {
+    Window ventana = SwingUtilities.getWindowAncestor(this);
+    if (ventana != null) {
+        ventana.dispose();
+    }
+}
+    
+    private void configurarPlaceholders() {
+        // Placeholder para día
+        txtDia.setText(PLACEHOLDER_DIA);
+        txtDia.setForeground(COLOR_PLACEHOLDER);
+
+        txtDia.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (txtDia.getText().equals(PLACEHOLDER_DIA)) {
+                    txtDia.setText("");
+                    txtDia.setForeground(COLOR_TEXTO);
+                }
+            }
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (txtDia.getText().trim().isEmpty()) {
+                    txtDia.setText(PLACEHOLDER_DIA);
+                    txtDia.setForeground(COLOR_PLACEHOLDER);
+                }
+            }
+        });
+
+        // Placeholder para año
+        txtAño.setText(PLACEHOLDER_AÑO);
+        txtAño.setForeground(COLOR_PLACEHOLDER);
+
+        txtAño.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (txtAño.getText().equals(PLACEHOLDER_AÑO)) {
+                    txtAño.setText("");
+                    txtAño.setForeground(COLOR_TEXTO);
+                }
+            }
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (txtAño.getText().trim().isEmpty()) {
+                    txtAño.setText(PLACEHOLDER_AÑO);
+                    txtAño.setForeground(COLOR_PLACEHOLDER);
+                }
+            }
+        });
+
+        // Placeholder para nombre
+        txtNombre.setForeground(COLOR_TEXTO);
+    }
+    
+    private void cargarMeses() {
+        cmbMes.removeAllItems();
+        cmbMes.addItem("Mes"); // Opción por defecto
+        String[] meses = {
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        };
+        for (String mes : meses) {
+            cmbMes.addItem(mes);
+        }
+    }
+
+    private void cargarGeneros() {
+    cmbGenero.removeAllItems();
+    cmbGenero.addItem("Género"); // opción por defecto
+
+    String[] generos = {
+        "Masculino",
+        "Femenino",
+        "Otro"
+    };
+
+    for (String genero : generos) {
+        cmbGenero.addItem(genero);
+    }
+}
+
+    private void mostrarFecha(LocalDate fecha) {
+    txtDia.setText(String.valueOf(fecha.getDayOfMonth()));
+    txtDia.setForeground(COLOR_TEXTO);
+
+    txtAño.setText(String.valueOf(fecha.getYear()));
+    txtAño.setForeground(COLOR_TEXTO);
+
+    cmbMes.setSelectedIndex(fecha.getMonthValue());
+    }
+
+    
+    public void mostrar() {
+    Usuario u = CLLUsuario.getInstancia().getUsuario();
+
+    if (u == null) return;
+
+    txtNombre.setText(u.getNombre());
+    txtEmail.setText(u.getEmail());
+
+    // El combo YA debe estar cargado antes
+    cmbGenero.setSelectedItem(u.getGenero());
+
+    if (u.getFechaDeNacimiento() != null) {
+        mostrarFecha(u.getFechaDeNacimiento());
+    }
+}
+
+    private void limpiarCamposPassword() {
+        jPasswordField1.setText("");
+        jPasswordField2.setText("");
+        jPasswordField3.setText("");
+    }
+
+
+
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -37,26 +170,26 @@ public class panPerfil extends javax.swing.JPanel {
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jTextField2 = new javax.swing.JTextField();
-        jTextField3 = new javax.swing.JTextField();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jTextField5 = new javax.swing.JTextField();
-        jComboBox2 = new javax.swing.JComboBox<>();
-        jButton1 = new javax.swing.JButton();
+        txtNombre = new javax.swing.JTextField();
+        txtEmail = new javax.swing.JTextField();
+        txtDia = new javax.swing.JTextField();
+        cmbMes = new javax.swing.JComboBox<>();
+        txtAño = new javax.swing.JTextField();
+        cmbGenero = new javax.swing.JComboBox<>();
+        btnGuardar = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
+        btnActualizarContraseña = new javax.swing.JButton();
         jPasswordField1 = new javax.swing.JPasswordField();
         jPasswordField2 = new javax.swing.JPasswordField();
         jPasswordField3 = new javax.swing.JPasswordField();
         jPasswordField4 = new javax.swing.JPasswordField();
-        jButton3 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
+        btnCerrarCesion = new javax.swing.JButton();
+        btnEliminarCuenta = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(40, 40, 40));
 
@@ -88,19 +221,20 @@ public class panPerfil extends javax.swing.JPanel {
         jLabel7.setForeground(new java.awt.Color(255, 255, 255));
         jLabel7.setText("Fecha de nacimiento :");
 
-        jTextField1.setText("jTextField1");
+        txtDia.setText("dd");
 
-        jTextField2.setText("jTextField1");
+        cmbMes.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "mes" }));
 
-        jTextField3.setText("jTextField1");
+        txtAño.setText("aaaa");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cmbGenero.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "genero" }));
 
-        jTextField5.setText("jTextField1");
-
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        jButton1.setText("Guardar cambios");
+        btnGuardar.setText("Guardar cambios");
+        btnGuardar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGuardarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -117,21 +251,21 @@ public class panPerfil extends javax.swing.JPanel {
                             .addComponent(jLabel6))
                         .addGap(46, 46, 46)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jTextField2)
-                            .addComponent(jTextField1)
+                            .addComponent(txtEmail)
+                            .addComponent(txtNombre)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(txtDia, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jComboBox1, 0, 117, Short.MAX_VALUE)
+                                .addComponent(cmbMes, 0, 117, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jComboBox2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addComponent(txtAño, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(cmbGenero, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(23, 23, 23)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton1)
+                            .addComponent(btnGuardar)
                             .addComponent(jLabel3))))
-                .addContainerGap(124, Short.MAX_VALUE))
+                .addContainerGap(133, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -143,22 +277,22 @@ public class panPerfil extends javax.swing.JPanel {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel4)
-                            .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(12, 12, 12)
                         .addComponent(jLabel5))
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(12, 12, 12)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtDia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmbMes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtAño, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(12, 12, 12)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
-                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cmbGenero, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(40, 40, 40)
-                .addComponent(jButton1)
+                .addComponent(btnGuardar)
                 .addContainerGap(58, Short.MAX_VALUE))
         );
 
@@ -184,7 +318,12 @@ public class panPerfil extends javax.swing.JPanel {
         jLabel12.setForeground(new java.awt.Color(255, 255, 255));
         jLabel12.setText("Confirmar Nueva :");
 
-        jButton2.setText("Cambiar Contraseña");
+        btnActualizarContraseña.setText("Cambiar Contraseña");
+        btnActualizarContraseña.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnActualizarContraseñaActionPerformed(evt);
+            }
+        });
 
         jPasswordField1.setText("jPasswordField1");
 
@@ -216,9 +355,9 @@ public class panPerfil extends javax.swing.JPanel {
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(23, 23, 23)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton2)
+                            .addComponent(btnActualizarContraseña)
                             .addComponent(jLabel8))))
-                .addContainerGap(124, Short.MAX_VALUE))
+                .addContainerGap(127, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -241,18 +380,28 @@ public class panPerfil extends javax.swing.JPanel {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel11)
                     .addComponent(jPasswordField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(40, 40, 40)
-                .addComponent(jButton2)
+                .addGap(30, 30, 30)
+                .addComponent(btnActualizarContraseña)
                 .addContainerGap(46, Short.MAX_VALUE))
         );
 
-        jButton3.setBackground(new java.awt.Color(255, 0, 0));
-        jButton3.setForeground(new java.awt.Color(255, 255, 255));
-        jButton3.setText("Cerrar Sesión");
+        btnCerrarCesion.setBackground(new java.awt.Color(255, 0, 0));
+        btnCerrarCesion.setForeground(new java.awt.Color(255, 255, 255));
+        btnCerrarCesion.setText("Cerrar Sesión");
+        btnCerrarCesion.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCerrarCesionActionPerformed(evt);
+            }
+        });
 
-        jButton5.setBackground(new java.awt.Color(255, 0, 0));
-        jButton5.setForeground(new java.awt.Color(255, 255, 255));
-        jButton5.setText("Eliminar Cuenta");
+        btnEliminarCuenta.setBackground(new java.awt.Color(255, 0, 0));
+        btnEliminarCuenta.setForeground(new java.awt.Color(255, 255, 255));
+        btnEliminarCuenta.setText("Eliminar Cuenta");
+        btnEliminarCuenta.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarCuentaActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -261,7 +410,7 @@ public class panPerfil extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGap(50, 50, 50)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnEliminarCuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                         .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createSequentialGroup()
@@ -269,7 +418,7 @@ public class panPerfil extends javax.swing.JPanel {
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnCerrarCesion, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(38, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -284,21 +433,127 @@ public class panPerfil extends javax.swing.JPanel {
                 .addGap(18, 18, 18)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(42, 42, 42)
-                .addComponent(jButton3)
+                .addComponent(btnCerrarCesion)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton5)
-                .addContainerGap(86, Short.MAX_VALUE))
+                .addComponent(btnEliminarCuenta)
+                .addContainerGap(96, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
+     String nombre = txtNombre.getText().trim();
+    String email = txtEmail.getText().trim();
+    String genero = cmbGenero.getSelectedItem().toString();
+
+    LocalDate fechaNacimiento;
+
+    try {
+        int dia = Integer.parseInt(txtDia.getText().trim());
+        int mes = cmbMes.getSelectedIndex(); // Enero = 1
+        int anio = Integer.parseInt(txtAño.getText().trim());
+
+        if (mes <= 0) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Seleccione un mes válido.",
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
+
+        fechaNacimiento = LocalDate.of(anio, mes, dia);
+
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(
+            this,
+            "La fecha ingresada no es válida.",
+            "Error",
+            JOptionPane.ERROR_MESSAGE
+        );
+        return;
+    }
+
+    boolean actualizado = BLLUsuario.actualizarPerfil(
+            nombre,
+            email,
+            fechaNacimiento,
+            genero
+    );
+
+    if (actualizado) {
+        mostrar(); // vuelve a cargar desde CLL
+    }
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnGuardarActionPerformed
+
+    private void btnActualizarContraseñaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarContraseñaActionPerformed
+        String actual = new String(jPasswordField1.getPassword()).trim();
+    String nueva = new String(jPasswordField2.getPassword()).trim();
+    String confirmar = new String(jPasswordField3.getPassword()).trim();
+
+    if (actual.isEmpty() || nueva.isEmpty() || confirmar.isEmpty()) {
+        JOptionPane.showMessageDialog(
+            this,
+            "Debe completar todos los campos.",
+            "Campos vacíos",
+            JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+
+    boolean ok = BLLUsuario.cambiarContraseña(actual, nueva, confirmar);
+
+    if (ok) {
+        limpiarCamposPassword();
+    }
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnActualizarContraseñaActionPerformed
+
+    private void btnCerrarCesionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCerrarCesionActionPerformed
+        // TODO add your handling code here:
+        int opcion = JOptionPane.showConfirmDialog(
+        this,
+        "¿Desea cerrar sesión?",
+        "Cerrar sesión",
+        JOptionPane.YES_NO_OPTION,
+        JOptionPane.QUESTION_MESSAGE
+    );
+
+    if (opcion != JOptionPane.YES_OPTION) {
+        return;
+    }
+
+    // 1. Cerrar sesión lógica
+    BLLUsuario.cerrarSesion();
+
+    // 2. Abrir login
+    FrmLogin login = new FrmLogin();
+    login.setVisible(true);
+
+    // 3. Cerrar ventana actual
+    cerrarVentana();
+    }//GEN-LAST:event_btnCerrarCesionActionPerformed
+
+    private void btnEliminarCuentaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarCuentaActionPerformed
+        // TODO add your handling code here:
+       boolean eliminada = BLLUsuario.eliminarCuenta();
+
+    if (eliminada) {
+        FrmLogin login = new FrmLogin();
+        login.setVisible(true);
+        cerrarVentana();
+    }
+    }//GEN-LAST:event_btnEliminarCuentaActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JComboBox<String> jComboBox2;
+    private javax.swing.JButton btnActualizarContraseña;
+    private javax.swing.JButton btnCerrarCesion;
+    private javax.swing.JButton btnEliminarCuenta;
+    private javax.swing.JButton btnGuardar;
+    private javax.swing.JComboBox<String> cmbGenero;
+    private javax.swing.JComboBox<String> cmbMes;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -317,9 +572,9 @@ public class panPerfil extends javax.swing.JPanel {
     private javax.swing.JPasswordField jPasswordField2;
     private javax.swing.JPasswordField jPasswordField3;
     private javax.swing.JPasswordField jPasswordField4;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField5;
+    private javax.swing.JTextField txtAño;
+    private javax.swing.JTextField txtDia;
+    private javax.swing.JTextField txtEmail;
+    private javax.swing.JTextField txtNombre;
     // End of variables declaration//GEN-END:variables
 }
