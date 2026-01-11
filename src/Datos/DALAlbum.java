@@ -20,36 +20,45 @@ public class DALAlbum {
     
     
     public static String obtenerUrlImagenAlbum(int albumId) {
+        String urlImagen = null;
 
-    String urlImagen = null;
+        // --- IMPORTANTE: Variables LOCALES (dentro del método) ---
+        // Esto arregla el NullPointerException cuando hay muchos hilos
+        java.sql.Connection cn = null;
+        java.sql.CallableStatement cs = null;
+        java.sql.ResultSet rs = null;
 
-    try {
-        cn = conexion.realizarconexion();
-
-        String sql = "{call sp_obtener_url_imagen_album(?)}";
-        cs = cn.prepareCall(sql);
-        cs.setInt(1, albumId);
-
-        rs = cs.executeQuery();
-
-        if (rs.next()) {
-            urlImagen = rs.getString("url_imagen");
-        }
-
-    } catch (ClassNotFoundException | SQLException ex) {
-        System.out.println("Error DAL: " + ex.getMessage());
-    } finally {
         try {
-            if (rs != null) rs.close();
-            if (cs != null) cs.close();
-            if (cn != null) cn.close();
-        } catch (SQLException ex) {
-            System.out.println("Error cerrando recursos: " + ex.getMessage());
-        }
-    }
+            // 1. Cada petición abre su propia conexión limpia
+            cn = conexion.realizarconexion();
 
-    return urlImagen;
-}
+            // 2. Llamamos a tu SP
+            String sql = "{call sp_obtener_url_imagen_album(?)}";
+            cs = cn.prepareCall(sql);
+            cs.setInt(1, albumId);
+
+            rs = cs.executeQuery();
+
+            if (rs.next()) {
+                urlImagen = rs.getString("url_imagen");
+            }
+
+        } catch (Exception ex) {
+            // Usamos Exception general para atrapar ClassNotFound y SQLException
+            System.out.println("❌ Error DALAlbum (Imagen ID " + albumId + "): " + ex.getMessage());
+        } finally {
+            // 3. Cerramos las conexiones de ESTE hilo específico
+            try {
+                if (rs != null) rs.close();
+                if (cs != null) cs.close();
+                if (cn != null) cn.close();
+            } catch (java.sql.SQLException ex) {
+                System.out.println("Error cerrando recursos: " + ex.getMessage());
+            }
+        }
+
+        return urlImagen;
+    }
 
     public static int obtenerDuracionTotalAlbum(int albumId) {
     int duracionTotal = 0;
@@ -83,44 +92,44 @@ public class DALAlbum {
 }
     
     public static List<Album> listarAlbumesPorArtista(int artistaId) {
-    List<Album> lista = new ArrayList<>();
+        List<Album> lista = new ArrayList<>();
 
-    try {
-        cn = conexion.realizarconexion();
-        String sql = "{call sp_listar_albumes_x_artista(?)}";
-        cs = cn.prepareCall(sql);
-        cs.setInt(1, artistaId);
-
-        rs = cs.executeQuery();
-
-        while (rs.next()) {
-            Album a = new Album();
-            a.setId(rs.getInt("id"));
-            a.setTitulo(rs.getString("titulo"));
-            a.setAnio(rs.getInt("anio"));
-            a.setUrlImagen(rs.getString("url_imagen"));
-
-            Artista ar = new Artista();
-            ar.setId(rs.getInt("artista_id"));
-            a.setArtista(ar);
-
-            lista.add(a);
-        }
-
-    } catch (ClassNotFoundException | SQLException ex) {
-        System.out.println("Error DAL: " + ex.getMessage());
-    } finally {
         try {
-            if (rs != null) rs.close();
-            if (cs != null) cs.close();
-            if (cn != null) cn.close();
-        } catch (SQLException ex) {
-            System.out.println("Error cerrando recursos: " + ex.getMessage());
-        }
-    }
+            cn = conexion.realizarconexion();
+            String sql = "{call sp_listar_albumes_x_artista(?)}";
+            cs = cn.prepareCall(sql);
+            cs.setInt(1, artistaId);
 
-    return lista;
-}
+            rs = cs.executeQuery();
+
+            while (rs.next()) {
+                Album a = new Album();
+                a.setId(rs.getInt("id"));
+                a.setTitulo(rs.getString("titulo"));
+                a.setAnio(rs.getInt("anio"));
+                a.setUrlImagen(rs.getString("url_imagen"));
+
+                Artista ar = new Artista();
+                ar.setId(rs.getInt("artista_id"));
+                a.setArtista(ar);
+
+                lista.add(a);
+            }
+
+        } catch (ClassNotFoundException | SQLException ex) {
+            System.out.println("Error DAL: " + ex.getMessage());
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (cs != null) cs.close();
+                if (cn != null) cn.close();
+            } catch (SQLException ex) {
+                System.out.println("Error cerrando recursos: " + ex.getMessage());
+            }
+        }
+
+        return lista;
+    }
 
 
 }

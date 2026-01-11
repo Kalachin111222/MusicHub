@@ -157,34 +157,31 @@ public static List<HistorialReproduccion> listarUltimasReproducciones(int usuari
     return lista;
 }
 
-public static String obtenerGeneroFavorito(int usuarioId) {
-    String genero = null;
-    try {
-        cn = conexion.realizarconexion();
-        String sql = "{call sp_obtener_genero_favorito(?)}";
-        cs = cn.prepareCall(sql);
-        cs.setInt(1, usuarioId);
-        rs = cs.executeQuery();
-
-        if (rs.next()) {
-            genero = rs.getString("genero");
-        }
-
-    } catch (Exception e) {
-        System.out.println("Error DAL: " + e.getMessage());
-    } finally {
+    public static String obtenerGeneroFavorito(int usuarioId) {
+        String genero = null;
         try {
-            if (rs != null) rs.close();
-            if (cs != null) cs.close();
-            if (cn != null) cn.close();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            cn = conexion.realizarconexion();
+            String sql = "{call sp_obtener_genero_favorito(?)}";
+            cs = cn.prepareCall(sql);
+            cs.setInt(1, usuarioId);
+            rs = cs.executeQuery();
+
+            if (rs.next()) {
+                genero = rs.getString("genero");
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error DAL: " + e.getMessage());
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (cs != null) cs.close();
+                if (cn != null) cn.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
         }
+        return genero;
     }
-    return genero;
-}
-
-   
-
 
 }

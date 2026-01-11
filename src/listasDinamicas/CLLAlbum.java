@@ -16,6 +16,7 @@ public class CLLAlbum {
     
     private CLLAlbum() {}
     
+    
     public static CLLAlbum getInstancia() {
         return instancia;
     }

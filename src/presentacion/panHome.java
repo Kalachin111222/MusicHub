@@ -9,6 +9,7 @@ import estructuras.ListaCircularDoble;
 import estructuras.NodoCircularDoble;
 import java.awt.Color;
 import javax.swing.JPanel;
+import logica.BLLAlbum;
 
 /**
  *
@@ -73,25 +74,22 @@ public class panHome extends javax.swing.JPanel {
     }
     
     private void actualizarRecomendadas() {
-        panGrid.removeAll(); // Limpiamos panel de arriba
+        panGrid.removeAll();
 
         if (listaRecomendadas == null || listaRecomendadas.esVacia()) return;
 
         NodoCircularDoble<Cancion> temp = nodoRecomendadas; 
 
         for (int i = 0; i < cantidadTarjetasVisibles; i++) {
-            JPanel tarjeta = crearTarjetaCancion(temp.getInfo()); // O getInfo() según tu nodo
+            JPanel tarjeta = crearTarjetaCancion(temp.getInfo());
             panGrid.add(tarjeta);
-            temp = temp.getSgte(); // O getSgte()
+            temp = temp.getSgte();
         }
 
         panGrid.revalidate();
         panGrid.repaint();
     }
 
-    // ==========================================
-    // LÓGICA POPULARES (ABAJO) - ¡ESTO FALTABA!
-    // ==========================================
     public void setListaPopulares(ListaCircularDoble<Cancion> lista) {
         this.listaPopulares = lista;
         if (!lista.esVacia()) {
@@ -117,66 +115,91 @@ public class panHome extends javax.swing.JPanel {
         panGridPopulares.repaint();
     }
     
-    // ==========================================
-    // DISEÑO DE TARJETA (COMPARTIDO)
-    // ==========================================
     private JPanel crearTarjetaCancion(Cancion c) {
-        // 1. Panel base de la tarjeta
-        JPanel panel = new JPanel();
-        panel.setLayout(new java.awt.BorderLayout());
-        panel.setBackground(new Color(50,50,50)); // Fondo normal
-        panel.setBorder(javax.swing.BorderFactory.createLineBorder(new Color(40,40,40), 1));
+    // --- 1. Configuración Visual ---
+    JPanel panel = new JPanel();
+    panel.setLayout(new java.awt.BorderLayout());
+    panel.setBackground(new Color(50,50,50));
+    panel.setBorder(javax.swing.BorderFactory.createLineBorder(new Color(40,40,40), 1));
+    panel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+    
+    javax.swing.JLabel lblImagen = new javax.swing.JLabel();
+    lblImagen.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+    lblImagen.setPreferredSize(new java.awt.Dimension(140, 140));
+    
+    // Placeholder "♫"
+    lblImagen.setText("♫");
+    lblImagen.setForeground(new Color(100, 100, 100));
+    lblImagen.setFont(new java.awt.Font("Segoe UI Emoji", 0, 48));
+    
+    // --- 2. Cargar imagen del álbum ---
+    if (c.getAlbum() != null) {
+        int idAlbum = c.getAlbum().getId();
         
-        // Cambiamos el cursor a "Mano" para que sepan que es clicable
-        panel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-
-        // 2. Icono (Nota musical grande)
-        javax.swing.JLabel lblIcono = new javax.swing.JLabel("♫");
-        lblIcono.setForeground(new Color(180, 180, 180)); 
-        lblIcono.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblIcono.setFont(new java.awt.Font("Segoe UI Emoji", 0, 48));
-
-        // 3. Título de la canción
-        javax.swing.JLabel lblTitulo = new javax.swing.JLabel(c.getTitulo()); 
-        lblTitulo.setForeground(Color.WHITE);
-        lblTitulo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblTitulo.setFont(new java.awt.Font("Roboto", 1, 12));
-        lblTitulo.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-
-        // 4. Armar
-        panel.add(lblIcono, java.awt.BorderLayout.CENTER);
-        panel.add(lblTitulo, java.awt.BorderLayout.SOUTH);
-        
-        // --- 5. EVENTOS DEL MOUSE (LO NUEVO) ---
-        panel.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                // AQUÍ OCURRE LA MAGIA
-                System.out.println("Reproduciendo: " + c.getTitulo());
+        new Thread(() -> {
+            try {
+                String urlDeLaBD = logica.BLLAlbum.obtenerUrlImagenAlbum(idAlbum);
                 
-                // Llamamos al padre (FrmPrincipal) para que toque la canción
-                if (parent != null) {
-                    parent.reproducirCancion(c); // <--- ¡QUÍTALE LAS BARRAS // !
+                if (urlDeLaBD != null && !urlDeLaBD.isEmpty()) {
+                    // Descargamos la imagen directamente
+                    java.net.URL url = new java.net.URL(urlDeLaBD);
+                    java.awt.image.BufferedImage img = javax.imageio.ImageIO.read(url);
+                    
+                    if (img != null) {
+                        java.awt.Image dimg = img.getScaledInstance(140, 140, java.awt.Image.SCALE_SMOOTH);
+                        javax.swing.ImageIcon icono = new javax.swing.ImageIcon(dimg);
+                        
+                        // Actualizamos la UI
+                        javax.swing.SwingUtilities.invokeLater(() -> {
+                            lblImagen.setText("");
+                            lblImagen.setIcon(icono);
+                        });
+                    }
                 }
+            } catch (Exception e) {
+                System.out.println("No se pudo cargar imagen para album ID: " + idAlbum);
+                e.printStackTrace();
             }
-
-            @Override
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                // Efecto visual: se ilumina al pasar el mouse
-                panel.setBackground(new Color(70, 70, 70));
-                lblIcono.setForeground(Color.WHITE);
-            }
-
-            @Override
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                // Vuelve al color original
-                panel.setBackground(new Color(50, 50, 50));
-                lblIcono.setForeground(new Color(180, 180, 180));
-            }
-        });
-        
-        return panel;
+        }).start();
     }
+    
+    // --- 3. Resto de la tarjeta ---
+    javax.swing.JLabel lblTitulo = new javax.swing.JLabel(c.getTitulo()); 
+    lblTitulo.setForeground(Color.WHITE);
+    lblTitulo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+    lblTitulo.setFont(new java.awt.Font("Roboto", 1, 12));
+    lblTitulo.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 2, 5, 2));
+    
+    panel.add(lblImagen, java.awt.BorderLayout.CENTER);
+    panel.add(lblTitulo, java.awt.BorderLayout.SOUTH);
+    
+    panel.addMouseListener(new java.awt.event.MouseAdapter() {
+        @Override
+        public void mouseClicked(java.awt.event.MouseEvent evt) {
+            System.out.println("Reproduciendo: " + c.getTitulo());
+            java.util.List<Cancion> aReproducir = new java.util.ArrayList<>();
+            aReproducir.add(c);
+            listasDinamicas.CLLReproductor.getInstancia().setNuevaCola(aReproducir, 0);
+            if (parent != null) parent.reproducirCancionActual();
+        }
+        
+        @Override
+        public void mouseEntered(java.awt.event.MouseEvent evt) { 
+            panel.setBackground(new Color(70, 70, 70)); 
+        }
+        
+        @Override
+        public void mouseExited(java.awt.event.MouseEvent evt) { 
+            panel.setBackground(new Color(50, 50, 50)); 
+        }
+    });
+    
+    return panel;
+}
+    
+    
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
