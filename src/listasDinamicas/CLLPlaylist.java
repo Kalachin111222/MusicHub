@@ -72,4 +72,14 @@ public class CLLPlaylist {
         }
         return null;
     }
+    
+    public Playlist buscarPorNombre(String nombre) {
+        for (Playlist p : listaPlaylists) {
+            if (p.getNombre().equalsIgnoreCase(nombre)) {
+                return p;
+            }
+        }
+        return null;
+    }
+    
 }

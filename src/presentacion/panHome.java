@@ -70,46 +70,72 @@ public class panHome extends javax.swing.JPanel {
 
     }
     
-    // MËTODO NUEVO PARA CARGAR ESTADÍSTICAS
     public void cargarDatosUsuario() {
+        // 1. Limpieza inicial para evitar mostrar datos del usuario anterior si falla algo
+        resetearEstadisticas();
+
         if (logica.BLLUsuario.hayUsuarioLogueado()) {
-            entidades.Usuario usuario = logica.BLLUsuario.getUsuarioActual();
-            int idUsuario = usuario.getId();
+            try {
+                entidades.Usuario usuario = logica.BLLUsuario.getUsuarioActual();
+                int idUsuario = usuario.getId();
 
-            // 1. Nombre del Usuario
-            String nombreCompleto = "Bienvenido, " + usuario.getNombre();
-            lblNombreUsuario.setText(nombreCompleto);
-            truncarTexto(lblNombreUsuario, 380); // APLICAR TRUNCAMIENTO
+                // --- Nombre del Usuario ---
+                String nombre = (usuario.getNombre() != null) ? usuario.getNombre() : "Usuario";
+                lblNombreUsuario.setText("Bienvenido, " + nombre);
+                truncarTexto(lblNombreUsuario, 380);
 
-            // 2. Género Favorito
-            String genero = logica.BLLHistorialReproduccion.obtenerGeneroFavorito(idUsuario);
-            String generoTexto = (genero != null) ? genero : "Sin datos";
-            lblGeneroFavorito.setText(generoTexto);
-            truncarTexto(lblGeneroFavorito, 280); // APLICAR TRUNCAMIENTO
+                // --- Género Favorito ---
+                try {
+                    String genero = logica.BLLHistorialReproduccion.obtenerGeneroFavorito(idUsuario);
+                    lblGeneroFavorito.setText((genero != null && !genero.isEmpty()) ? genero : "Sin datos");
+                } catch (Exception e) {
+                    lblGeneroFavorito.setText("No disponible");
+                    System.err.println("Error cargando género: " + e.getMessage());
+                }
+                truncarTexto(lblGeneroFavorito, 280);
 
-            // 3. Total Reproducciones
-            int total = logica.BLLHistorialReproduccion.contarReproducciones(idUsuario);
-            lblReproducciones.setText(String.valueOf(total));
-            truncarTexto(lblReproducciones, 280); // Por si acaso el número es muy grande
+                // --- Total Reproducciones ---
+                try {
+                    int total = logica.BLLHistorialReproduccion.contarReproducciones(idUsuario);
+                    lblReproducciones.setText(String.valueOf(total));
+                } catch (Exception e) {
+                    lblReproducciones.setText("0");
+                }
+                truncarTexto(lblReproducciones, 280);
 
-            // 4. Últimas 24h
-            java.util.List<entidades.HistorialReproduccion> recientes = 
-                    logica.BLLHistorialReproduccion.listarUltimasReproducciones(idUsuario, 20);
+                // --- Actividad Últimas 24h ---
+                try {
+                    java.util.List<entidades.HistorialReproduccion> recientes = 
+                            logica.BLLHistorialReproduccion.listarUltimasReproducciones(idUsuario, 20);
 
-            int cantidadReciente = (recientes != null) ? recientes.size() : 0;
-            String textoReciente = cantidadReciente + " canciones";
-            lblCanciones24h.setText(textoReciente);
-            truncarTexto(lblCanciones24h, 280); // APLICAR TRUNCAMIENTO
+                    int cantidad = (recientes != null) ? recientes.size() : 0;
+                    lblCanciones24h.setText(cantidad + (cantidad == 1 ? " canción" : " canciones"));
+                } catch (Exception e) {
+                    lblCanciones24h.setText("Sin actividad");
+                }
+                truncarTexto(lblCanciones24h, 280);
 
+            } catch (Exception ex) {
+                System.err.println("Error crítico en cargarDatosUsuario: " + ex.getMessage());
+            }
         } else {
             // Caso Invitado
             lblNombreUsuario.setText("Bienvenido, Invitado");
-            truncarTexto(lblNombreUsuario, 380);
-
             lblGeneroFavorito.setText("-");
             lblReproducciones.setText("0");
             lblCanciones24h.setText("-");
+            truncarTexto(lblNombreUsuario, 380);
         }
+    }
+
+    /**
+     * Método auxiliar para limpiar los labels antes de cargar
+     */
+    private void resetearEstadisticas() {
+        lblNombreUsuario.setText("Cargando...");
+        lblGeneroFavorito.setText("-");
+        lblReproducciones.setText("-");
+        lblCanciones24h.setText("-");
     }
     
     private void truncarTexto(javax.swing.JLabel label, int anchoMax) {
@@ -138,92 +164,126 @@ public class panHome extends javax.swing.JPanel {
             label.setToolTipText(null);
         }
     }
-    
+        // ==========================================
+    // LÓGICA RECOMENDADAS (CARRUSEL SUPERIOR)
     // ==========================================
-    // LÓGICA RECOMENDADAS (ARRIBA)
-    // ==========================================
-    public void setListaRecomendadas(ListaCircularDoble<Cancion> lista) {
-        this.listaRecomendadas = lista;
-        if (!lista.esVacia()) {
-            this.nodoRecomendadas = lista.getL(); 
+
+    public void setListaRecomendadas(ListaCircularDoble<Cancion> nuevaLista) {
+        // Solo actualizamos si la lista es diferente o el nodo está nulo
+        if (this.listaRecomendadas != nuevaLista) {
+            this.listaRecomendadas = nuevaLista;
+            if (nuevaLista != null && !nuevaLista.esVacia()) {
+                this.nodoRecomendadas = nuevaLista.getL(); 
+            } else {
+                this.nodoRecomendadas = null;
+            }
+            actualizarRecomendadas();
         }
-        actualizarRecomendadas();
     }
-    
+
     private void actualizarRecomendadas() {
+        // 1. Limpieza rápida
         panGrid.removeAll();
 
-        if (listaRecomendadas == null || listaRecomendadas.esVacia()) return;
-
-        NodoCircularDoble<Cancion> temp = nodoRecomendadas; 
-
-        for (int i = 0; i < cantidadTarjetasVisibles; i++) {
-            JPanel tarjeta = crearTarjetaCancion(temp.getInfo());
-            panGrid.add(tarjeta);
-            temp = temp.getSgte();
+        // 2. Validación de datos
+        if (listaRecomendadas == null || listaRecomendadas.esVacia() || nodoRecomendadas == null) {
+            panGrid.revalidate();
+            panGrid.repaint();
+            return;
         }
 
+        // 3. Renderizado de tarjetas visibles
+        NodoCircularDoble<Cancion> temp = nodoRecomendadas; 
+        for (int i = 0; i < cantidadTarjetasVisibles; i++) {
+            if (temp != null) {
+                JPanel tarjeta = crearTarjetaCancion(temp.getInfo());
+                panGrid.add(tarjeta);
+                temp = temp.getSgte();
+            }
+        }
+
+        // 4. Refrescar contenedor
         panGrid.revalidate();
         panGrid.repaint();
     }
 
-    public void setListaPopulares(ListaCircularDoble<Cancion> lista) {
-        this.listaPopulares = lista;
-        if (!lista.esVacia()) {
-            this.nodoPopulares = lista.getL(); 
+    // ==========================================
+    // LÓGICA POPULARES (CARRUSEL INFERIOR)
+    // ==========================================
+
+    public void setListaPopulares(ListaCircularDoble<Cancion> nuevaLista) {
+        // Solo actualizamos si la lista es diferente para no perder la posición actual
+        if (this.listaPopulares != nuevaLista) {
+            this.listaPopulares = nuevaLista;
+            if (nuevaLista != null && !nuevaLista.esVacia()) {
+                this.nodoPopulares = nuevaLista.getL(); 
+            } else {
+                this.nodoPopulares = null;
+            }
+            actualizarPopulares();
         }
-        actualizarPopulares();
     }
-    
+
     private void actualizarPopulares() {
-        panGridPopulares.removeAll(); // Limpiamos panel de abajo
+        // 1. Limpieza rápida
+        panGridPopulares.removeAll();
 
-        if (listaPopulares == null || listaPopulares.esVacia()) return;
-
-        NodoCircularDoble<Cancion> temp = nodoPopulares; 
-
-        for (int i = 0; i < cantidadTarjetasVisibles; i++) {
-            JPanel tarjeta = crearTarjetaCancion(temp.getInfo()); // O getInfo()
-            panGridPopulares.add(tarjeta);
-            temp = temp.getSgte(); // O getSgte()
+        // 2. Validación de datos
+        if (listaPopulares == null || listaPopulares.esVacia() || nodoPopulares == null) {
+            panGridPopulares.revalidate();
+            panGridPopulares.repaint();
+            return;
         }
 
+        // 3. Renderizado de tarjetas visibles
+        NodoCircularDoble<Cancion> temp = nodoPopulares; 
+        for (int i = 0; i < cantidadTarjetasVisibles; i++) {
+            if (temp != null) {
+                JPanel tarjeta = crearTarjetaCancion(temp.getInfo());
+                panGridPopulares.add(tarjeta);
+                temp = temp.getSgte();
+            }
+        }
+
+        // 4. Refrescar contenedor
         panGridPopulares.revalidate();
         panGridPopulares.repaint();
     }
     
    private JPanel crearTarjetaCancion(entidades.Cancion c) {
-        // --- 1. Configuración Visual ---
-        JPanel panel = new PanelPersonalizado(); // Tu clase con bordes redondeados
+        // --- 1. Configuración Visual del Panel Contenedor ---
+        JPanel panel = new PanelPersonalizado(); // Clase con bordes redondeados
         panel.setLayout(new java.awt.BorderLayout());
-        panel.setBackground(java.awt.Color.BLACK); 
-        panel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 25, 25), 1));
+        panel.setBackground(new java.awt.Color(18, 18, 18)); // Fondo ligeramente más claro que el total
+        panel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(40, 40, 40), 1));
         panel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        panel.setPreferredSize(new java.awt.Dimension(140, 170)); 
+        panel.setPreferredSize(new java.awt.Dimension(145, 185)); // Ajustado para mejor aire visual
 
+        // --- 2. Label de Imagen (Cuerpo de la Tarjeta) ---
         javax.swing.JLabel lblImagen = new javax.swing.JLabel();
         lblImagen.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblImagen.setPreferredSize(new java.awt.Dimension(120, 120));
+        lblImagen.setPreferredSize(new java.awt.Dimension(125, 125));
 
-        // Placeholder estilizado
+        // Placeholder (Se muestra mientras carga o si falla)
         lblImagen.setText("♫");
-        lblImagen.setForeground(new java.awt.Color(60, 60, 60));
-        lblImagen.setFont(new java.awt.Font("Segoe UI Emoji", 0, 48));
+        lblImagen.setForeground(new java.awt.Color(80, 80, 80));
+        lblImagen.setFont(new java.awt.Font("Segoe UI Emoji", 0, 50));
 
-        // --- 2. Lógica de Imagen con Caché específica de Tarjetas ---
+        // --- 3. Lógica de Imagen con Caché y Async ---
         if (c.getAlbum() != null) {
             int idAlbum = c.getAlbum().getId();
 
-            // Usamos cacheImagenes (específica para 120x120)
+            // Verificar si ya está en caché para evitar descargar de nuevo
             if (cacheImagenes != null && cacheImagenes.containsKey(idAlbum)) {
                 lblImagen.setText("");
                 lblImagen.setIcon(cacheImagenes.get(idAlbum));
             } else {
+                // Hilo secundario para no congelar la UI mientras descarga
                 new Thread(() -> {
                     try {
                         String urlBD = logica.BLLAlbum.obtenerUrlImagenAlbum(idAlbum);
 
-                        // Conversión de URL Google Drive
+                        // Conversión rápida de link de Google Drive a link directo
                         if (urlBD != null && urlBD.contains("drive.google.com")) {
                             java.util.regex.Matcher m = java.util.regex.Pattern.compile("/d/([a-zA-Z0-9_-]+)").matcher(urlBD);
                             if (m.find()) urlBD = "https://drive.google.com/uc?export=download&id=" + m.group(1);
@@ -232,11 +292,14 @@ public class panHome extends javax.swing.JPanel {
                         if (urlBD != null && !urlBD.isEmpty()) {
                             java.net.URL url = new java.net.URL(urlBD);
                             java.awt.image.BufferedImage img = javax.imageio.ImageIO.read(url);
+
                             if (img != null) {
-                                java.awt.Image dimg = img.getScaledInstance(120, 120, java.awt.Image.SCALE_SMOOTH);
+                                // Escalado suave de alta calidad
+                                java.awt.Image dimg = img.getScaledInstance(125, 125, java.awt.Image.SCALE_SMOOTH);
                                 javax.swing.ImageIcon icono = new javax.swing.ImageIcon(dimg);
 
-                                if (cacheImagenes != null) cacheImagenes.put(idAlbum, icono); 
+                                // Guardar en caché y actualizar UI
+                                if (cacheImagenes != null) cacheImagenes.put(idAlbum, icono);
 
                                 javax.swing.SwingUtilities.invokeLater(() -> {
                                     lblImagen.setText("");
@@ -245,50 +308,55 @@ public class panHome extends javax.swing.JPanel {
                             }
                         }
                     } catch (Exception e) {
-                        System.err.println("Error en tarjeta ID: " + idAlbum);
+                        System.err.println("Error cargando imagen Álbum ID " + idAlbum + ": " + e.getMessage());
                     }
                 }).start();
             }
         }
 
-        // --- 3. Título de la Canción ---
-        javax.swing.JLabel lblTitulo = new javax.swing.JLabel(c.getTitulo()); 
+        // --- 4. Título de la Canción con Truncamiento ---
+        String tituloOriginal = (c.getTitulo() != null) ? c.getTitulo() : "Desconocido";
+        javax.swing.JLabel lblTitulo = new javax.swing.JLabel(tituloOriginal);
         lblTitulo.setForeground(java.awt.Color.WHITE);
         lblTitulo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblTitulo.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 12));
-        lblTitulo.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 8, 5));
+        lblTitulo.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 5, 10, 5));
 
+        // Tooltip para ver el nombre completo si es muy largo
+        lblTitulo.setToolTipText(tituloOriginal);
+
+        // Ensamblaje
         panel.add(lblImagen, java.awt.BorderLayout.CENTER);
         panel.add(lblTitulo, java.awt.BorderLayout.SOUTH);
 
-        // --- 4. Eventos de Mouse ---
+        // --- 5. Eventos de Interacción (Hover y Click) ---
         panel.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                java.util.ArrayList<entidades.Cancion> listaSimple = new java.util.ArrayList<>();
-                listaSimple.add(c);
-
                 if (parent != null) {
-                    // Se envía la canción individual al reproductor
-                    parent.reproducirDesdePanel(listaSimple, 0);
+                    java.util.ArrayList<entidades.Cancion> listaUnica = new java.util.ArrayList<>();
+                    listaUnica.add(c);
+                    parent.reproducirDesdePanel(listaUnica, 0);
                 }
             }
 
             @Override
-            public void mouseEntered(java.awt.event.MouseEvent evt) { 
-                panel.setBackground(new java.awt.Color(35, 35, 35)); 
-                panel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(100, 100, 100), 1));
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                panel.setBackground(new java.awt.Color(35, 35, 35));
+                panel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(30, 215, 96), 1)); // Verde estilo Spotify
             }
 
             @Override
-            public void mouseExited(java.awt.event.MouseEvent evt) { 
-                panel.setBackground(java.awt.Color.BLACK); 
-                panel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 25, 25), 1));
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                panel.setBackground(new java.awt.Color(18, 18, 18));
+                panel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(40, 40, 40), 1));
             }
         });
 
         return panel;
     }
+   
+   
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

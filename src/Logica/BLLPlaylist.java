@@ -44,6 +44,8 @@ public class BLLPlaylist {
             return false;
         }
         
+        recargarPlaylists();
+        
         mostrarExito("Playlist creada exitosamente.");
         return true;
     }
@@ -102,10 +104,24 @@ public class BLLPlaylist {
         return true;
     }
         
+    // 1. Este método ahora sí trae la info de la BD y la guarda en el CLL
     public static List<Playlist> obtenerPlaylistsUsuario(int usuarioId) {
-        // Esta función ya no se usa con DAL directo
-        // Las playlists se deben obtener desde tu sistema de gestión
+        // Traemos la lista real desde la Base de Datos (DAL)
+        List<Playlist> listaBD = DALPlaylist.listarPlaylistsPorUsuario(usuarioId);
+
+        // Sincronizamos con el CLL para que la memoria esté actualizada
+        CLLPlaylist.getInstancia().setListaPlaylists(listaBD);
+
+        // Devolvemos la lista que ahora vive en el CLL
         return CLLPlaylist.getInstancia().getListaPlaylists();
+    }
+
+    // 2. Método de utilidad para refrescar todo después de crear una playlist
+    public static void recargarPlaylists() {
+        Usuario usuario = CLLUsuario.getInstancia().getUsuario();
+        if (usuario != null) {
+            obtenerPlaylistsUsuario(usuario.getId());
+        }
     }
         
     public static List<Cancion> listarCancionesDePlaylist(int playlistId) {
@@ -163,5 +179,9 @@ public class BLLPlaylist {
             "Éxito",
             JOptionPane.INFORMATION_MESSAGE
         );
+    }
+    
+    public static Playlist buscarPlaylistPorNombre(String nombre) {
+        return CLLPlaylist.getInstancia().buscarPorNombre(nombre);
     }
 }
