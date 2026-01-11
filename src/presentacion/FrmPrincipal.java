@@ -275,48 +275,122 @@ public class FrmPrincipal extends javax.swing.JFrame {
     
     
     
+//    public void reproducirDesdePanel(java.util.List<entidades.Cancion> lista, int indice) {
+//        listasDinamicas.CLLReproductor gestor = listasDinamicas.CLLReproductor.getInstancia();
+//
+//        if (lista.size() == 1) {
+//            gestor.setNuevaCola(lista, 0);
+//            System.out.println("Reproduciendo canción individual seleccionada.");
+//        } 
+//        else if (gestor.getActual() != null) {
+//            for (int i = indice; i < lista.size(); i++) {
+//                entidades.Cancion nueva = lista.get(i);
+//                // Evitamos duplicar la que ya está sonando en este instante
+//                if (nueva.getId() != gestor.getActual().getId()) {
+//                    gestor.insertar(nueva);
+//                }
+//            }
+//            System.out.println("Lista agregada a la cola de reproducción.");
+//        } 
+//        else {
+//            gestor.setNuevaCola(lista, indice);
+//            System.out.println("Nueva lista de reproducción iniciada.");
+//        }
+//
+//        reproducirCancionActual(); 
+//
+//        javax.swing.SwingUtilities.invokeLater(() -> {
+//            cargarColaLateral(true);
+//        });
+//    }
     public void reproducirDesdePanel(java.util.List<entidades.Cancion> lista, int indice) {
         listasDinamicas.CLLReproductor gestor = listasDinamicas.CLLReproductor.getInstancia();
 
-        if (lista.size() == 1) {
-            gestor.setNuevaCola(lista, 0);
-            System.out.println("Reproduciendo canción individual seleccionada.");
-        } 
-        else if (gestor.getActual() != null) {
-            for (int i = indice; i < lista.size(); i++) {
-                entidades.Cancion nueva = lista.get(i);
-                // Evitamos duplicar la que ya está sonando en este instante
-                if (nueva.getId() != gestor.getActual().getId()) {
-                    gestor.insertar(nueva);
-                }
-            }
-            System.out.println("Lista agregada a la cola de reproducción.");
-        } 
-        else {
-            gestor.setNuevaCola(lista, indice);
-            System.out.println("Nueva lista de reproducción iniciada.");
+        // Validación
+        if (lista == null || indice < 0 || indice >= lista.size()) {
+            System.err.println("Error: Índice fuera de rango o lista nula.");
+            return;
         }
 
-        reproducirCancionActual(); 
+        entidades.Cancion seleccionada = lista.get(indice);
 
+        // ============================================
+        // DECISIÓN: ¿Crear nueva cola o agregar?
+        // ============================================
+
+        entidades.Cancion actual = gestor.getActual();
+
+        if (actual == null || !gestorAudio.estaReproduciendo()) {
+            // CASO 1: No hay nada sonando → Crear nueva cola
+            java.util.List<entidades.Cancion> listaUnica = new java.util.ArrayList<>();
+            listaUnica.add(seleccionada);
+            gestor.setNuevaCola(listaUnica, 0);
+            System.out.println("Nueva cola creada: " + seleccionada.getTitulo());
+
+        } else {
+            // CASO 2: Ya hay algo sonando → Agregar a la cola
+            // Evitar duplicar la canción que ya está sonando
+            if (seleccionada.getId() != actual.getId()) {
+                gestor.insertar(seleccionada);
+                System.out.println("Agregada a la cola: " + seleccionada.getTitulo());
+
+                // Actualizar solo la vista de la cola lateral
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    cargarColaLateral(false); // false = no subir scroll
+                });
+                return; // IMPORTANTE: No reproducir inmediatamente
+            } else {
+                System.out.println("La canción ya está sonando");
+                return;
+            }
+        }
+
+        // Solo llegamos aquí si creamos una nueva cola
+        reproducirCancionActual(); 
         javax.swing.SwingUtilities.invokeLater(() -> {
-            cargarColaLateral(true);
+            cargarColaLateral(true); 
         });
     }
     
     
     
     
+    
+//    private void actualizarBarraGUI() {
+//        if (gestorAudio != null && gestorAudio.getDuracionTotal() > 0) {
+//            double actual = gestorAudio.getTiempoActual();
+//            double total = gestorAudio.getDuracionTotal();
+//
+//            pgbProgreso.setMaximum((int) total);
+//            pgbProgreso.setValue((int) actual);
+//
+//            lblTmpActual.setText(obtenerTiempoFormateado(actual));
+//            lblDuracion.setText(obtenerTiempoFormateado(total));
+//        }
+//    }
+    
     private void actualizarBarraGUI() {
         if (gestorAudio != null && gestorAudio.getDuracionTotal() > 0) {
             double actual = gestorAudio.getTiempoActual();
             double total = gestorAudio.getDuracionTotal();
 
+            // 1. Actualización visual de la barra y etiquetas
             pgbProgreso.setMaximum((int) total);
             pgbProgreso.setValue((int) actual);
 
             lblTmpActual.setText(obtenerTiempoFormateado(actual));
             lblDuracion.setText(obtenerTiempoFormateado(total));
+
+            // 2. VALIDACIÓN DE FIN DE CANCIÓN
+            // Comparamos si el tiempo actual llegó al total. 
+            // Usamos -0.5 como margen de seguridad para que el cambio sea fluido.
+            if (actual >= total - 0.5 && actual > 0) {
+                System.out.println("Fin de canción detectado. Avanzando...");
+
+                // Llamamos al evento del botón siguiente programáticamente.
+                // Pasamos 'null' porque el método no usa el objeto 'evt'.
+                btnSiguienteActionPerformed(null);
+            }
         }
     }
     
@@ -706,9 +780,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 32767));
-        filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 32767));
-        filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 32767));
         panFondo = new javax.swing.JPanel();
         pgbProgreso = new ProgressBarPersonalizada();
         lblDuracion = new javax.swing.JLabel();
@@ -1146,9 +1217,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private javax.swing.JButton btnPlayPausar;
     private javax.swing.JButton btnSiguiente;
     private javax.swing.JButton btnVolver;
-    private javax.swing.Box.Filler filler1;
-    private javax.swing.Box.Filler filler2;
-    private javax.swing.Box.Filler filler3;
     private javax.swing.JButton jButton11;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;

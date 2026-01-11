@@ -57,14 +57,27 @@ public class CLLReproductor {
     }
 
     public void insertar(Cancion c) {
-        if (cancionActual == null) {
-            cancionActual = c;
-        } else {
-            // Para insertar al final (cola) usando pilas:
-            Pila<Cancion> aux = new Pila<>();
-            while(!pilaSiguientes.isEmpty()) aux.push(pilaSiguientes.pop());
-            pilaSiguientes.push(c); 
-            while(!aux.isEmpty()) pilaSiguientes.push(aux.pop());
+        if (c == null) return; // Validación
+
+        // SIEMPRE agregar a la cola de siguientes, incluso si no hay canción actual
+        Pila<Cancion> aux = new Pila<>();
+
+        // Vaciar pilaSiguientes en auxiliar
+        while(!pilaSiguientes.isEmpty()) {
+            aux.push(pilaSiguientes.pop());
+        }
+
+        // Agregar la nueva canción al fondo
+        pilaSiguientes.push(c); 
+
+        // Restaurar el orden original
+        while(!aux.isEmpty()) {
+            pilaSiguientes.push(aux.pop());
+        }
+
+        // Si no hay canción actual, promover la primera de la cola
+        if (cancionActual == null && !pilaSiguientes.isEmpty()) {
+            cancionActual = pilaSiguientes.pop();
         }
     }
 
