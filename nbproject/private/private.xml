@@ -8,6 +8,17 @@
             <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/listasDinamicas/CLLReproductor.java</file>
             <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/presentacion/panArtista.java</file>
             <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/presentacion/panDetalleAlbum.java</file>
+            <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/Logica/BLLHistorialReproduccion.java</file>
+            <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/Logica/BLLPlaylist.java</file>
+            <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/Logica/BLLUsuario.java</file>
+            <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/Logica/BLLCancion.java</file>
+            <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/Logica/BLLAlbum.java</file>
+            <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/Datos/DALHistorialReproduccion.java</file>
+            <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/Datos/DALPlaylist.java</file>
+            <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/listasDinamicas/CLLPlaylist.java</file>
+            <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/presentacion/panPlaylist.java</file>
+            <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/presentacion/dlgSeleccionarPlaylist.java</file>
+            <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/presentacion/FrmLogin.java</file>
         </group>
     </open-files>
 </project-private>

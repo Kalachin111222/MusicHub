@@ -268,9 +268,8 @@ public class panHome extends javax.swing.JPanel {
                 java.util.ArrayList<entidades.Cancion> listaSimple = new java.util.ArrayList<>();
                 listaSimple.add(c);
 
-                if (parent != null) {
-                    // Se envía la canción individual al reproductor
-                    parent.reproducirDesdePanel(listaSimple, 0);
+                if (parent != null) {   
+                    parent.reproducirDesdePanel(listaSimple, 0); 
                 }
             }
 

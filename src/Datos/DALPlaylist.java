@@ -169,6 +169,35 @@ public static String quitarCancionDePlaylist(int playlistId, int cancionId) {
 
     return mensaje;
 }
+    public static List<Playlist> listarPlaylistsPorUsuario(int usuarioId) {
+        List<Playlist> lista = new ArrayList<>();
+        try {
+            cn = conexion.realizarconexion();
+            String sql = "{call sp_listar_playlists_por_usuario(?)}";
+            cs = cn.prepareCall(sql);
+            cs.setInt(1, usuarioId);
+            rs = cs.executeQuery();
+
+            while (rs.next()) {
+                Playlist p = new Playlist();
+                p.setId(rs.getInt("id"));
+                p.setNombre(rs.getString("nombre"));
+                p.setFechaCreacion(rs.getDate("fecha_creacion").toLocalDate());
+                lista.add(p);
+            }
+        } catch (ClassNotFoundException | SQLException ex) {
+            System.out.println("Error DAL: " + ex.getMessage());
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (cs != null) cs.close();
+                if (cn != null) cn.close();
+            } catch (SQLException ex) {
+                System.out.println("Error cerrando: " + ex.getMessage());
+            }
+        }
+        return lista;
+    }
 
 
   
