@@ -306,15 +306,12 @@ public static String incrementarReproducciones(int cancionId) {
 }
 
 public static List<Cancion> listarCancionesMasPopulares() {
-
     List<Cancion> lista = new ArrayList<>();
 
     try {
         cn = conexion.realizarconexion();
-
         String sql = "{call sp_listar_canciones_mas_populares()}";
         cs = cn.prepareCall(sql);
-
         rs = cs.executeQuery();
 
         while (rs.next()) {
@@ -325,11 +322,13 @@ public static List<Cancion> listarCancionesMasPopulares() {
             c.setGenero(rs.getString("genero"));
             c.setNumeroReproducciones(rs.getInt("numero_reproducciones"));
             c.setUrlAudio(rs.getString("url_audio"));
-
             Artista ar = new Artista();
-            ar.setId(rs.getInt("artista_id"));
+            ar.setId(rs.getInt("artista_id_ref")); // coincide con el SP corregido
             ar.setNombre(rs.getString("artista_nombre"));
             c.setArtista(ar);
+            Album al = new Album();
+            al.setId(rs.getInt("album_id"));
+            c.setAlbum(al);
 
             lista.add(c);
         }
@@ -349,6 +348,7 @@ public static List<Cancion> listarCancionesMasPopulares() {
     return lista;
 }
 
+
 public static List<Cancion> listarCancionesPorGeneroNoEscuchadas(int usuarioId, String genero) {
     List<Cancion> lista = new ArrayList<>();
 
@@ -364,10 +364,17 @@ public static List<Cancion> listarCancionesPorGeneroNoEscuchadas(int usuarioId, 
             Cancion c = new Cancion();
             c.setId(rs.getInt("id"));
             c.setTitulo(rs.getString("titulo"));
-            c.setGenero(rs.getString("genero"));
             c.setDuracion(rs.getInt("duracion"));
+            c.setGenero(rs.getString("genero"));
+            c.setNumeroReproducciones(rs.getInt("numero_reproducciones"));
             c.setUrlAudio(rs.getString("url_audio"));
-            // Puedes agregar artista y album si quieres
+            Artista ar = new Artista();
+            ar.setId(rs.getInt("artista_id"));
+            c.setArtista(ar);
+            Album al = new Album();
+            al.setId(rs.getInt("album_id"));
+            c.setAlbum(al);
+
             lista.add(c);
         }
 
@@ -385,6 +392,7 @@ public static List<Cancion> listarCancionesPorGeneroNoEscuchadas(int usuarioId, 
 
     return lista;
 }
+
 
 public static String obtenerUrlAudioCancion(int cancionId) {
 

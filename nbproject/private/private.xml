@@ -3,8 +3,13 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Asus/OneDrive/Documentos/IV%20CICLO%20UNT/POO/Proyecto_MusicHub/Music_hub/MusicHub/src/presentacion/PruebaAudio.java</file>
-            <file>file:/C:/Users/Asus/OneDrive/Documentos/IV%20CICLO%20UNT/POO/Proyecto_MusicHub/Music_hub/MusicHub/src/presentacion/FrmPrincipal.java</file>
+            <file>file:/C:/Users/Asus/OneDrive/Documentos/IV%20CICLO%20UNT/POO/Proyecto_MusicHub/Music_hub/MusicHub/src/entidades/Album.java</file>
+            <file>file:/C:/Users/Asus/OneDrive/Documentos/IV%20CICLO%20UNT/POO/Proyecto_MusicHub/Music_hub/MusicHub/src/Datos/DALCancion.java</file>
+            <file>file:/C:/Users/Asus/OneDrive/Documentos/IV%20CICLO%20UNT/POO/Proyecto_MusicHub/Music_hub/MusicHub/src/entidades/Artista.java</file>
+            <file>file:/C:/Users/Asus/OneDrive/Documentos/IV%20CICLO%20UNT/POO/Proyecto_MusicHub/Music_hub/MusicHub/src/Datos/DALHistorialReproduccion.java</file>
+            <file>file:/C:/Users/Asus/OneDrive/Documentos/IV%20CICLO%20UNT/POO/Proyecto_MusicHub/Music_hub/MusicHub/src/Datos/DALArtista.java</file>
+            <file>file:/C:/Users/Asus/OneDrive/Documentos/IV%20CICLO%20UNT/POO/Proyecto_MusicHub/Music_hub/MusicHub/src/entidades/Cancion.java</file>
+            <file>file:/C:/Users/Asus/OneDrive/Documentos/IV%20CICLO%20UNT/POO/Proyecto_MusicHub/Music_hub/MusicHub/src/Datos/DALAlbum.java</file>
         </group>
     </open-files>
 </project-private>
