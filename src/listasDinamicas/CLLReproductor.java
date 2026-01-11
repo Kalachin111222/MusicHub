@@ -27,13 +27,20 @@ public class CLLReproductor {
         return instancia;
     }
 
-    public void setNuevaCola(List<Cancion> nuevasCanciones) {
+    // Modifica este método para recibir el índice de la canción que clickeaste
+    public void setNuevaCola(List<Cancion> nuevasCanciones, int indiceInicial) {
         if (nuevasCanciones == null || nuevasCanciones.isEmpty()) {
             this.colaReproduccion = new ArrayList<>();
             this.indiceActual = -1;
         } else {
             this.colaReproduccion = new ArrayList<>(nuevasCanciones);
-            this.indiceActual = 0;
+            
+            // Validamos que el índice exista, si no, ponemos 0
+            if (indiceInicial >= 0 && indiceInicial < nuevasCanciones.size()) {
+                this.indiceActual = indiceInicial;
+            } else {
+                this.indiceActual = 0;
+            }
         }
     }
 
@@ -55,5 +62,12 @@ public class CLLReproductor {
             return colaReproduccion.get(indiceActual);
         }
         return null;
+    }
+    
+    // --- AGREGAR ESTE MÉTODO EN TU CLLReproductor ---
+    
+    public List<Cancion> getColaActual() {
+        // Devuelve la lista completa para poder pintarla en el lateral
+        return this.colaReproduccion; 
     }
 }

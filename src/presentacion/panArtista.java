@@ -18,6 +18,98 @@ public class panArtista extends javax.swing.JPanel {
     public panArtista(FrmPrincipal parent) {
         this.parent = parent;
         initComponents();
+        configurarGrid(); // <--- AGREGA ESTO
+    }
+    
+    // =========================================================================
+    //  LOGICA MANUAL (Copiar y Pegar debajo de "Variables declaration")
+    // =========================================================================
+
+    // Método que llamaremos al iniciar el panel para asegurar que el Grid funcione bien
+    public void configurarGrid() {
+        // Forzamos GridLayout de 0 filas (infinitas) y 4 columnas
+        // Esto hará que el panel crezca hacia abajo y active el Scroll del FrmPrincipal
+        panGrid.setLayout(new java.awt.GridLayout(0, 4, 20, 20)); 
+        
+        // Importante: Quitamos el color de fondo gris si quieres que sea transparente
+        // o lo dejamos igual que el fondo principal
+        panGrid.setBackground(new java.awt.Color(25, 25, 25));
+    }
+
+    // Este es el método que FrmPrincipal llamará cuando el usuario elija un artista
+    public void cargarDatosArtista(entidades.Artista artista) {
+        // 1. Actualizar el título
+        jLabel1.setText(artista.getNombre());
+        
+        // 2. Limpiar álbumes anteriores
+        panGrid.removeAll();
+        
+        // 3. Obtener álbumes reales (Simulación por ahora si no hay BD lista)
+        // En el futuro: List<Album> albumes = logica.BLLAlbum.getByArtista(artista.getId());
+        
+        // BUCLE DE PRUEBA: Creamos 12 álbumes falsos para ver si baja el scroll
+        for (int i = 1; i <= 12; i++) {
+            entidades.Album alb = new entidades.Album();
+            alb.setTitulo("Álbum " + i);
+            // alb.setRutaImagen("/ruta/a/imagen.jpg"); // Si tuvieras imágenes
+            
+            agregarTarjetaAlbum(alb);
+        }
+        
+        // 4. Refrescar visualmente
+        panGrid.revalidate();
+        panGrid.repaint();
+    }
+
+    // Método auxiliar para crear el diseño de cada "cuadradito" de álbum
+    private void agregarTarjetaAlbum(entidades.Album album) {
+        // Panel contenedor de la tarjeta
+        javax.swing.JPanel card = new javax.swing.JPanel();
+        card.setLayout(new java.awt.BorderLayout());
+        card.setBackground(new java.awt.Color(40, 40, 40)); // Un poco más claro que el fondo
+        card.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(60, 60, 60)));
+        
+        // Etiqueta para la imagen (Carátula)
+        javax.swing.JLabel lblImg = new javax.swing.JLabel("[IMG]");
+        lblImg.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblImg.setForeground(java.awt.Color.GRAY);
+        lblImg.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 18));
+        
+        // Etiqueta para el título
+        javax.swing.JLabel lblTitulo = new javax.swing.JLabel(album.getTitulo());
+        lblTitulo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblTitulo.setForeground(java.awt.Color.WHITE);
+        lblTitulo.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 14));
+        lblTitulo.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 5, 10, 5));
+
+        // Agregar elementos a la tarjeta
+        card.add(lblImg, java.awt.BorderLayout.CENTER);
+        card.add(lblTitulo, java.awt.BorderLayout.SOUTH);
+
+        // --- EVENTO DE CLIC ---
+        card.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                // Aquí llamaremos al panel de detalle (lo crearemos en el siguiente paso)
+                parent.mostrarPanel(new panDetalleAlbum(parent, album));
+                System.out.println("Clic en álbum: " + album.getTitulo());
+            }
+
+            // Efecto Hover (Cambia de color al pasar el mouse)
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                card.setBackground(new java.awt.Color(60, 60, 60));
+                card.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                card.setBackground(new java.awt.Color(40, 40, 40));
+            }
+        });
+
+        // Agregar la tarjeta al grid principal
+        panGrid.add(card);
     }
 
     /**
@@ -30,46 +122,16 @@ public class panArtista extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
+        panGrid = new javax.swing.JPanel();
 
-        setBackground(new java.awt.Color(40, 40, 40));
+        setBackground(new java.awt.Color(25, 25, 25));
 
         jLabel1.setFont(new java.awt.Font("Roboto", 1, 24)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("[Nombre del Artista]");
 
-        jLabel2.setFont(new java.awt.Font("Roboto", 0, 14)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText("Álbumes: 5");
-
-        jTable1.setBackground(new java.awt.Color(35, 35, 35));
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jScrollPane1.setViewportView(jTable1);
-
-        jLabel3.setFont(new java.awt.Font("Roboto", 0, 14)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel3.setText("Canciones: 42");
-
-        jLabel4.setFont(new java.awt.Font("Roboto", 1, 18)); // NOI18N
-        jLabel4.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel4.setText("Canciones");
+        panGrid.setBackground(new java.awt.Color(25, 25, 25));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -77,42 +139,27 @@ public class panArtista extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 742, Short.MAX_VALUE)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 654, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(48, 48, 48))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(40, 40, 40)
+                .addComponent(panGrid, javax.swing.GroupLayout.PREFERRED_SIZE, 918, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(40, 40, 40))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(50, 50, 50)
                 .addComponent(jLabel1)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 498, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(85, Short.MAX_VALUE))
+                .addGap(38, 38, 38)
+                .addComponent(panGrid, javax.swing.GroupLayout.PREFERRED_SIZE, 665, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(163, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
+    private javax.swing.JPanel panGrid;
     // End of variables declaration//GEN-END:variables
 }

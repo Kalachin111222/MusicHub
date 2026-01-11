@@ -99,4 +99,17 @@ public class GestorAudio {
             player.seek(javafx.util.Duration.seconds(segundos));
         }
     }
+    
+    // --- AGREGA ESTE MÉTODO EN GESTORAUDIO ---
+    public void continuar() {
+        // Solo continuamos si existe el player y estaba en pausa o detenido
+        if (player != null) {
+            if (enPausa || player.getStatus() == MediaPlayer.Status.PAUSED || player.getStatus() == MediaPlayer.Status.READY) {
+                player.play();
+                enPausa = false;
+                System.out.println("▶ Reanudando audio...");
+            }
+        }
+    }
+    
 }

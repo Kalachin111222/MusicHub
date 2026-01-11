@@ -25,7 +25,7 @@ public class PruebaAudio {
             System.out.println("2. Motor JavaFX encendido CORRECTAMENTE.");
 
             // Prueba con un link directo (Usaremos uno de ejemplo que siempre funciona)
-            String url = "https://drive.google.com/uc?export=download&id=1N5-90TXzHKnn5uVT7KZlo2P9ZKsHmLbR";
+            String url = "https://drive.google.com/uc?export=download&id=1jAj_xM6LwIMFAZujg7svYbawXwaTwfEP";
             System.out.println("3. Intentando cargar: " + url);
 
             Media media = new Media(url);
