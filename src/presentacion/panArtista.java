@@ -4,6 +4,8 @@
  */
 package presentacion;
 
+import entidades.Artista;
+
 /**
  *
  * @author ArcosArce
@@ -14,11 +16,23 @@ public class panArtista extends javax.swing.JPanel {
      * Creates new form panPlaylist
      */
     private FrmPrincipal parent;
+    private Artista artistaActual;
     
     public panArtista(FrmPrincipal parent) {
         this.parent = parent;
         initComponents();
         configurarGrid(); // <--- AGREGA ESTO
+    }
+    
+    public panArtista(FrmPrincipal parent, Artista artista) {
+        this.parent = parent;
+        this.artistaActual = artista; // Guardamos el objeto recibido
+        initComponents();
+        configurarGrid();
+        
+        if (artista != null) {
+            cargarDatosArtista(artista);
+        }
     }
     
     // =========================================================================
@@ -27,91 +41,133 @@ public class panArtista extends javax.swing.JPanel {
 
     // Método que llamaremos al iniciar el panel para asegurar que el Grid funcione bien
     public void configurarGrid() {
-        // Forzamos GridLayout de 0 filas (infinitas) y 4 columnas
-        // Esto hará que el panel crezca hacia abajo y active el Scroll del FrmPrincipal
-        panGrid.setLayout(new java.awt.GridLayout(0, 4, 20, 20)); 
+        // --- CAMBIO CLAVE ---
+        // Usamos FlowLayout (Alineado a la izquierda) en lugar de GridLayout.
+        // Esto evita que las tarjetas se estiren como chicle.
+        panGrid.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 20, 20)); 
         
-        // Importante: Quitamos el color de fondo gris si quieres que sea transparente
-        // o lo dejamos igual que el fondo principal
         panGrid.setBackground(new java.awt.Color(25, 25, 25));
     }
 
     // Este es el método que FrmPrincipal llamará cuando el usuario elija un artista
     public void cargarDatosArtista(entidades.Artista artista) {
-        // 1. Actualizar el título
+        this.artistaActual = artista;
+        // 1. Poner nombre del artista
         jLabel1.setText(artista.getNombre());
         
-        // 2. Limpiar álbumes anteriores
+        // 2. Limpiar lo anterior
         panGrid.removeAll();
-        
-        // 3. Obtener álbumes reales (Simulación por ahora si no hay BD lista)
-        // En el futuro: List<Album> albumes = logica.BLLAlbum.getByArtista(artista.getId());
-        
-        // BUCLE DE PRUEBA: Creamos 12 álbumes falsos para ver si baja el scroll
-        for (int i = 1; i <= 12; i++) {
-            entidades.Album alb = new entidades.Album();
-            alb.setTitulo("Álbum " + i);
-            // alb.setRutaImagen("/ruta/a/imagen.jpg"); // Si tuvieras imágenes
+
+        try {
+            java.util.List<entidades.Album> listaAlbumes = logica.BLLAlbum.listarAlbumesPorArtista(artista.getId());
             
-            agregarTarjetaAlbum(alb);
+            if (listaAlbumes == null) {
+                listaAlbumes = new java.util.ArrayList<>();
+            }
+
+            System.out.println("Álbumes encontrados en BD para " + artista.getNombre() + ": " + listaAlbumes.size());
+
+            for (entidades.Album alb : listaAlbumes) {
+                agregarTarjetaAlbum(alb); 
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error al cargar álbumes del artista: " + e.getMessage());
+            e.printStackTrace();
         }
-        
-        // 4. Refrescar visualmente
+
+        // 5. Refrescar visualmente
         panGrid.revalidate();
         panGrid.repaint();
     }
-
+    
+    
+    // Método auxiliar para crear el diseño de cada "cuadradito" de álbum
     // Método auxiliar para crear el diseño de cada "cuadradito" de álbum
     private void agregarTarjetaAlbum(entidades.Album album) {
         // Panel contenedor de la tarjeta
         javax.swing.JPanel card = new javax.swing.JPanel();
         card.setLayout(new java.awt.BorderLayout());
-        card.setBackground(new java.awt.Color(40, 40, 40)); // Un poco más claro que el fondo
+        card.setBackground(new java.awt.Color(40, 40, 40));
         card.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(60, 60, 60)));
-        
-        // Etiqueta para la imagen (Carátula)
-        javax.swing.JLabel lblImg = new javax.swing.JLabel("[IMG]");
+
+        // --- AQUÍ ESTÁ EL TRUCO PARA QUE NO CREZCAN ---
+        // Definimos un tamaño fijo para la tarjeta
+        java.awt.Dimension dimensionFija = new java.awt.Dimension(180, 240);
+        card.setPreferredSize(dimensionFija);
+        card.setMaximumSize(dimensionFija);
+        card.setMinimumSize(dimensionFija);
+        // ---------------------------------------------
+
+        // 1. Label para la Imagen (con lógica de carga en hilo separado)
+        javax.swing.JLabel lblImg = new javax.swing.JLabel("Cargando...");
         lblImg.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblImg.setForeground(java.awt.Color.GRAY);
-        lblImg.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 18));
+        lblImg.setPreferredSize(new java.awt.Dimension(150, 150)); // Tamaño zona imagen
+
+        // Lógica de descarga (Tu código corregido)
+        new Thread(() -> {
+            try {
+                String urlString = album.getUrlImagen();
+                if (urlString != null && !urlString.isEmpty()) {
+                    // Fix Google Drive
+                    if (urlString.contains("drive.google.com") && urlString.contains("/d/")) {
+                         java.util.regex.Matcher m = java.util.regex.Pattern.compile("/d/([a-zA-Z0-9_-]+)").matcher(urlString);
+                         if (m.find()) urlString = "https://drive.google.com/uc?export=download&id=" + m.group(1);
+                    }
+                    
+                    java.net.URL url = new java.net.URL(urlString);
+                    java.awt.image.BufferedImage img = javax.imageio.ImageIO.read(url);
+
+                    if (img != null) {
+                        // Redimensionar imagen a 150x150
+                        java.awt.Image dimg = img.getScaledInstance(150, 150, java.awt.Image.SCALE_SMOOTH);
+                        javax.swing.ImageIcon icono = new javax.swing.ImageIcon(dimg);
+                        javax.swing.SwingUtilities.invokeLater(() -> {
+                            lblImg.setText("");
+                            lblImg.setIcon(icono);
+                        });
+                    }
+                } else {
+                    javax.swing.SwingUtilities.invokeLater(() -> lblImg.setText("Sin Img"));
+                }
+            } catch (Exception ex) {
+                System.out.println("Error img: " + ex.getMessage());
+            }
+        }).start();
+
+        // 2. Label Título (Cortar si es muy largo)
+        String titulo = album.getTitulo();
+        if (titulo.length() > 22) titulo = titulo.substring(0, 19) + "...";
         
-        // Etiqueta para el título
-        javax.swing.JLabel lblTitulo = new javax.swing.JLabel(album.getTitulo());
+        javax.swing.JLabel lblTitulo = new javax.swing.JLabel(titulo);
         lblTitulo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblTitulo.setForeground(java.awt.Color.WHITE);
         lblTitulo.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 14));
         lblTitulo.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 5, 10, 5));
 
-        // Agregar elementos a la tarjeta
         card.add(lblImg, java.awt.BorderLayout.CENTER);
         card.add(lblTitulo, java.awt.BorderLayout.SOUTH);
 
-        // --- EVENTO DE CLIC ---
+        // Eventos Mouse
         card.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
-                // Aquí llamaremos al panel de detalle (lo crearemos en el siguiente paso)
-                parent.mostrarPanel(new panDetalleAlbum(parent, album));
-                System.out.println("Clic en álbum: " + album.getTitulo());
+                parent.mostrarPanel(new panDetalleAlbum(parent, album,artistaActual));
             }
-
-            // Efecto Hover (Cambia de color al pasar el mouse)
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
                 card.setBackground(new java.awt.Color(60, 60, 60));
                 card.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
             }
-
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
                 card.setBackground(new java.awt.Color(40, 40, 40));
             }
         });
 
-        // Agregar la tarjeta al grid principal
         panGrid.add(card);
     }
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

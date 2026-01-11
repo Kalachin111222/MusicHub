@@ -22,6 +22,9 @@ public class panDetalleAlbum extends javax.swing.JPanel {
      */
     private FrmPrincipal principal;
     private Album albumActual;
+    // AGREGA ESTA LÍNEA:
+    private java.util.List<Cancion> listaCanciones;
+    private entidades.Artista artistaActual;
 
     // -------------------------------------------------------------------------
     // CONSTRUCTOR 1: EL QUE USA NETBEANS (NO TOCAR)
@@ -33,13 +36,14 @@ public class panDetalleAlbum extends javax.swing.JPanel {
     // -------------------------------------------------------------------------
     // CONSTRUCTOR 2: EL QUE USAMOS NOSOTROS (RECIBE DATOS)
     // -------------------------------------------------------------------------
-    public panDetalleAlbum(FrmPrincipal principal, Album album) {
+    public panDetalleAlbum(FrmPrincipal principal, Album album, entidades.Artista artista) {
         this.principal = principal;
         this.albumActual = album;
+        this.artistaActual = artista; // <--- Guardamos el artista recibido
         
-        initComponents(); // 1. NetBeans dibuja el diseño base
-        personalizarPanel(); // 2. Nosotros corregimos detalles (como el layout vertical)
-        cargarDatosAlbum(); // 3. Llenamos los datos
+        initComponents(); 
+        personalizarPanel(); 
+        cargarDatosAlbum(); 
     }
 
     // Método para arreglar cosas que el diseñador de NetBeans no hace bien
@@ -53,83 +57,174 @@ public class panDetalleAlbum extends javax.swing.JPanel {
     }
 
     private void cargarDatosAlbum() {
+        // 1. Validamos que exista álbum
         if (albumActual == null) return;
 
-        // Llenamos la cabecera
-        lblAlbum.setText(albumActual.getTitulo()); // Asegúrate que en tu entidad Album sea getNombre o getTitulo
-        
-        // Si tu objeto Album tiene el artista enlazado:
-        // lblArtista.setText(albumActual.getArtista().getNombre());
-        
-        // Limpiamos la lista visual anterior
-        panListaCanciones.removeAll();
+        // ---------------------------------------------------------
+        // 2. CONFIGURAR TEXTOS (TÍTULO Y ARTISTA)
+        // ---------------------------------------------------------
+        lblAlbum.setText(albumActual.getTitulo());
 
-        // --- SIMULACIÓN DE CANCIONES ---
-        // Generamos 10 falsas para probar el diseño (luego conectas la BD aquí)
-        for (int i = 1; i <= 10; i++) {
-            Cancion c = new Cancion();
-            c.setTitulo("Canción " + i + " de " + albumActual.getTitulo());
-            c.setDuracion(180 + (i * 10)); // Duración variable
-            
-            agregarFilaCancion(i, c);
+        // Aquí usamos la variable 'artistaActual' que llenamos en el Constructor
+        if (artistaActual != null) {
+            lblArtista.setText(artistaActual.getNombre());
+        } else {
+            lblArtista.setText("Artista Desconocido");
         }
-        
-        // Refrescamos para que aparezcan
+
+        // ---------------------------------------------------------
+        // 3. CARGAR IMAGEN DEL ÁLBUM (En un hilo separado para no congelar)
+        // ---------------------------------------------------------
+        new Thread(() -> {
+            try {
+                String urlString = albumActual.getUrlImagen();
+                
+                // Corrección para enlaces de Google Drive
+                if (urlString != null && !urlString.isEmpty()) {
+                    if (urlString.contains("drive.google.com") && urlString.contains("/d/")) {
+                        java.util.regex.Matcher m = java.util.regex.Pattern.compile("/d/([a-zA-Z0-9_-]+)").matcher(urlString);
+                        if (m.find()) {
+                            urlString = "https://drive.google.com/uc?export=download&id=" + m.group(1);
+                        }
+                    }
+
+                    java.net.URL url = new java.net.URL(urlString);
+                    java.awt.image.BufferedImage img = javax.imageio.ImageIO.read(url);
+
+                    if (img != null) {
+                        // Redimensionamos a 200x200
+                        java.awt.Image dimg = img.getScaledInstance(200, 200, java.awt.Image.SCALE_SMOOTH);
+                        javax.swing.ImageIcon icono = new javax.swing.ImageIcon(dimg);
+
+                        // Actualizamos la interfaz
+                        javax.swing.SwingUtilities.invokeLater(() -> {
+                            lblImagen.setText("");
+                            lblImagen.setIcon(icono);
+                        });
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Error cargando carátula detalle: " + e.getMessage());
+            }
+        }).start();
+
+        // ---------------------------------------------------------
+        // 4. CARGAR LISTA DE CANCIONES DESDE LA BASE DE DATOS
+        // ---------------------------------------------------------
+        panListaCanciones.removeAll(); // Limpiamos la lista visual anterior
+
+        try {
+            // Buscamos las canciones de este álbum en la BD
+            this.listaCanciones = logica.BLLCancion.listarCancionesPorAlbum(albumActual.getId());
+
+            if (this.listaCanciones != null && !this.listaCanciones.isEmpty()) {
+                
+                // --- AQUÍ ESTÁ EL TRUCO: COMPLETAR LOS DATOS FALTANTES ---
+                // Recorremos las canciones recuperadas para 'inyectarles' el Álbum y el Artista
+                // Así, cuando las reproduzcas, el reproductor tendrá toda la info.
+                
+                for (Cancion c : this.listaCanciones) {
+                    // 1. Le asignamos el objeto Album actual
+                    c.setAlbum(this.albumActual);
+                    
+                    // 2. Le asignamos el objeto Artista actual
+                    if (this.artistaActual != null) {
+                        c.setArtista(this.artistaActual); 
+                        c.setNombreArtista(this.artistaActual.getNombre());
+                    }
+                }
+
+                // --- DIBUJAR LAS FILAS EN PANTALLA ---
+                int contador = 1;
+                for (Cancion c : this.listaCanciones) {
+                    agregarFilaCancion(contador++, c);
+                }
+                
+            } else {
+                // Si no hay canciones, mostramos un mensaje
+                javax.swing.JLabel lblVacio = new javax.swing.JLabel("No hay canciones disponibles.");
+                lblVacio.setForeground(java.awt.Color.GRAY);
+                lblVacio.setAlignmentX(Component.CENTER_ALIGNMENT);
+                panListaCanciones.add(lblVacio);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error trayendo canciones: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // Refrescar panel visualmente
         panListaCanciones.revalidate();
         panListaCanciones.repaint();
     }
-
+    
     private void agregarFilaCancion(int numero, Cancion cancion) {
-        // Panel que representa UN RENGLÓN (una canción)
+        // 1. Crear el contenedor de la fila
         JPanel fila = new JPanel();
         fila.setLayout(new BorderLayout());
-        fila.setMaximumSize(new Dimension(2000, 45)); // Ancho infinito, Alto fijo 45px
-        fila.setPreferredSize(new Dimension(0, 45));
-        fila.setBackground(new Color(25, 25, 25)); // Mismo fondo
-        fila.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(40, 40, 40))); // Línea abajo
+        fila.setMaximumSize(new Dimension(2000, 45)); // Permite que se estire a lo ancho
+        fila.setPreferredSize(new Dimension(0, 45));   // Altura fija de 45px
 
-        // Texto Izquierda: "1. Titulo Cancion"
+        // Mejora visual: Empezamos transparente
+        fila.setOpaque(false); 
+        fila.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(40, 40, 40))); // Línea sutil abajo
+
+        // 2. Texto Izquierda: "1. Título de la Canción"
         JLabel lblInfo = new JLabel("  " + numero + ".    " + cancion.getTitulo());
         lblInfo.setForeground(Color.WHITE);
-        lblInfo.setFont(new java.awt.Font("Roboto", java.awt.Font.PLAIN, 14));
-        
-        // Texto Derecha: "03:45"
-        JLabel lblDuracion = new JLabel(formatearTiempo(cancion.getDuracion()) + "   ");
+        lblInfo.setFont(new Font("SansSerif", Font.PLAIN, 14));
+
+        // 3. Texto Derecha: "03:45" (Duración)
+        JLabel lblDuracion = new JLabel(formatearTiempo(cancion.getDuracion()) + "    ");
         lblDuracion.setForeground(Color.GRAY);
-        
+        lblDuracion.setFont(new Font("SansSerif", Font.PLAIN, 12));
+
+        // Agregar elementos al panel de la fila
         fila.add(lblInfo, BorderLayout.CENTER);
         fila.add(lblDuracion, BorderLayout.EAST);
 
-        // --- EVENTOS DEL MOUSE ---
+        // 4. --- EVENTOS DEL MOUSE (Interactividad) ---
         fila.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                fila.setBackground(new Color(50, 50, 50)); // Resaltar
+                // Al entrar el mouse: Fondo gris oscuro y cursor de mano
+                fila.setOpaque(true);
+                fila.setBackground(new Color(45, 45, 45)); 
                 fila.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                fila.repaint(); // Refrescar color
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                fila.setBackground(new Color(25, 25, 25)); // Normal
+                // Al salir el mouse: Volver a ser transparente
+                fila.setOpaque(false);
+                fila.repaint(); // Refrescar color
             }
 
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) { 
-                    System.out.println("Reproduciendo: " + cancion.getTitulo());
-                    // AQUÍ CONECTARÁS CON EL GESTOR DE AUDIO:
-                    // principal.reproducirCancion(cancion);
+                    if (principal != null) {
+                        // Creamos una lista que contiene ÚNICAMENTE esta canción
+                        java.util.List<Cancion> listaSoloUna = new java.util.ArrayList<>();
+                        listaSoloUna.add(cancion); 
+
+                        // Enviamos la lista de una sola canción al reproductor
+                        principal.reproducirDesdePanel(listaSoloUna, 0);
+                    }
                 }
             }
         });
 
-        // Agregamos la fila al panel contenedor
+        // 5. Agregar la fila terminada al panel principal de la lista
         panListaCanciones.add(fila);
     }
     
     private void reproducirAlbumCompleto() {
-        System.out.println("Reproduciendo álbum completo: " + albumActual.getTitulo());
-        // Lógica para enviar todas las canciones al gestorAudio
+        if (principal != null && listaCanciones != null && !listaCanciones.isEmpty()) {
+            // Enviamos la lista completa y empezamos por la canción 0 (la primera)
+            principal.reproducirDesdePanel(listaCanciones, 0);
+        }
     }
 
     private String formatearTiempo(double segundos) {

@@ -4,16 +4,19 @@
  */
 package presentacion;
 
+import entidades.Artista;
 import estructuras.Pila;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
 import entidades.Cancion;
+import estructuras.ListaCircularDoble;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javax.imageio.ImageIO;
+import listasDinamicas.CLLReproductor;
 
 /**
  *
@@ -36,6 +39,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private panArtista panArtista;
     private panPerfil panPerfil;
     private static FrmPrincipal instanciaGlobal;
+    private java.util.Map<Integer, javax.swing.Icon> cacheColaLateral = new java.util.HashMap<>();
 
 
     public static FrmPrincipal getInstanciaGlobal() {
@@ -45,11 +49,8 @@ public class FrmPrincipal extends javax.swing.JFrame {
     public FrmPrincipal() {
         initComponents();
         setLocationRelativeTo(null);
-        
         inicializarComponentes();
-
         cargarPlaylistsLateral(); 
-
         cargarColaLateral(); 
         new javafx.embed.swing.JFXPanel();
         instanciaGlobal = this;
@@ -58,8 +59,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private void configurarUsuarioActual() {
         if (logica.BLLUsuario.hayUsuarioLogueado()) {
             entidades.Usuario usuario = logica.BLLUsuario.getUsuarioActual();
-            
-            
             System.out.println("Usuario logueado: " + usuario.getNombre());
         } else {
             System.out.println("Modo Invitado");
@@ -68,7 +67,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
     
     private void inicializarComponentes() {
         gestorAudio = new GestorAudio();
-
         timerProgreso = new javax.swing.Timer(500, new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -122,7 +120,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
                 for (entidades.Cancion c : listaPopulares) circularPopulares.insertar(c);
             }
             panHome.setListaPopulares(circularPopulares);
-            
         }
 
         mostrarPanel(panHome);
@@ -154,6 +151,40 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
         pgbProgreso.addMouseListener(controlBarra);
         pgbProgreso.addMouseMotionListener(controlBarra);
+        
+        lblArtista.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+
+        lblArtista.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                lblArtista.setForeground(new java.awt.Color(29, 185, 84)); 
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                lblArtista.setForeground(java.awt.Color.WHITE); 
+            }
+
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Cancion cancionActual = listasDinamicas.CLLReproductor.getInstancia().getActual();
+
+                if (cancionActual != null && cancionActual.getArtista() != null) {
+                    Artista artistaSeleccionado = cancionActual.getArtista();
+                    System.out.println("Navegando al perfil de: " + artistaSeleccionado.getNombre());
+
+                    panArtista panelArtista = new panArtista(FrmPrincipal.this, artistaSeleccionado);
+                    mostrarPanel(panelArtista); 
+
+                } else {
+                    String nombreEnLabel = lblArtista.getText();
+                    if (!nombreEnLabel.equals("Artista Desconocido") && !nombreEnLabel.equals("...")) {
+                          Artista ar = Logica.BLLArtista.obtenerDatosArtista(nombreEnLabel);
+                          if (ar != null) mostrarPanel(new panArtista(instanciaGlobal, ar));
+                    }
+                }
+            }
+        });
     }
     
     private void cargarImagenPortada(String url, javax.swing.JLabel label) {
@@ -161,7 +192,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
         new Thread(() -> {
             try {
-                // 1. Descargar imagen
                 java.net.URL linkImagen = new java.net.URL(url);
                 java.awt.image.BufferedImage imagenOriginal = ImageIO.read(linkImagen);
                 
@@ -182,74 +212,93 @@ public class FrmPrincipal extends javax.swing.JFrame {
     }
     
     public void reproducirCancionActual() {
-        // 1. Obtener la canción desde la lógica
-        Cancion c = listasDinamicas.CLLReproductor.getInstancia().getActual();
-        
+        entidades.Cancion c = listasDinamicas.CLLReproductor.getInstancia().getActual();
+
         if (c == null) return; 
 
-        // 2. Actualizar textos
         lblTitulo.setText(c.getTitulo());
-        
-        if (c.getAlbum() != null && c.getAlbum().getArtista() != null) {
-            lblArtista.setText(c.getAlbum().getArtista().getNombre());
-        } else {
-            lblArtista.setText("Artista Desconocido");
-        }
-        
-        // 3. ACTUALIZAR CARÁTULA (lblImagenCancion) - LÓGICA CORREGIDA
-        // Ponemos un placeholder o limpiamos mientras carga
+        lblArtista.setText((c.getNombreArtista() != null) ? c.getNombreArtista() : "Artista Desconocido");
+
         lblImagenCancion.setIcon(null); 
         lblImagenCancion.setText("..."); 
 
         if (c.getAlbum() != null) {
             int idAlbum = c.getAlbum().getId();
-            
-            // Usamos un HILO para no congelar la app al descargar
-            new Thread(() -> {
-                try {
-                    // A. Pedimos la URL a la BD (Tu método estático arreglado)
-                    String urlBD = logica.BLLAlbum.obtenerUrlImagenAlbum(idAlbum);
-                    
-                    // B. Si es link de Google Drive, lo convertimos (Lógica rápida inline)
-                    String urlFinal = urlBD;
-                    if (urlBD != null && urlBD.contains("drive.google.com") && urlBD.contains("/d/")) {
-                         java.util.regex.Matcher m = java.util.regex.Pattern.compile("/d/([a-zA-Z0-9_-]+)").matcher(urlBD);
-                         if (m.find()) {
-                             urlFinal = "https://drive.google.com/uc?export=download&id=" + m.group(1);
-                         }
-                    }
-
-                    if (urlFinal != null && !urlFinal.isEmpty()) {
-                        java.net.URL url = new java.net.URL(urlFinal);
-                        java.awt.image.BufferedImage img = javax.imageio.ImageIO.read(url);
-                        
-                        if (img != null) {
-                            // Redimensionamos al tamaño de tu label (ej. 60x60)
-                            java.awt.Image dimg = img.getScaledInstance(60, 60, java.awt.Image.SCALE_SMOOTH);
-                            javax.swing.ImageIcon icono = new javax.swing.ImageIcon(dimg);
-                            
-                            // C. Actualizamos la UI
-                            javax.swing.SwingUtilities.invokeLater(() -> {
-                                lblImagenCancion.setText(""); // Quitamos texto
-                                lblImagenCancion.setIcon(icono); // Ponemos foto
-                            });
+            if (cacheColaLateral != null && cacheColaLateral.containsKey(idAlbum)) {
+                lblImagenCancion.setText("");
+                lblImagenCancion.setIcon(cacheColaLateral.get(idAlbum));
+            } else {
+                new Thread(() -> {
+                    try {
+                        String urlBD = logica.BLLAlbum.obtenerUrlImagenAlbum(idAlbum);
+                        if (urlBD != null && urlBD.contains("drive.google.com")) {
+                            java.util.regex.Matcher m = java.util.regex.Pattern.compile("/d/([a-zA-Z0-9_-]+)").matcher(urlBD);
+                            if (m.find()) urlBD = "https://drive.google.com/uc?export=download&id=" + m.group(1);
                         }
+
+                        if (urlBD != null && !urlBD.isEmpty()) {
+                            java.net.URL url = new java.net.URL(urlBD);
+                            java.awt.image.BufferedImage img = javax.imageio.ImageIO.read(url);
+                            if (img != null) {
+                                java.awt.Image dimg = img.getScaledInstance(60, 60, java.awt.Image.SCALE_SMOOTH);
+                                javax.swing.ImageIcon icono = new javax.swing.ImageIcon(dimg);
+                                javax.swing.SwingUtilities.invokeLater(() -> {
+                                    lblImagenCancion.setText(""); 
+                                    lblImagenCancion.setIcon(icono); 
+                                });
+                            }
+                        }
+                    } catch (Exception e) { 
+                        System.err.println("Error carátula: " + e.getMessage());
                     }
-                } catch (Exception e) {
-                    System.out.println("Error cargando mini carátula: " + e.getMessage());
-                }
-            }).start();
+                }).start();
+            }
         }
 
-        // 4. Reproducir Audio
         if (gestorAudio != null) {
+            if (logica.BLLUsuario.hayUsuarioLogueado()) {
+                int idUsuario = logica.BLLUsuario.getUsuarioActual().getId();
+                logica.BLLHistorialReproduccion.registrarReproduccion(idUsuario, c.getId());
+            }
             gestorAudio.reproducir(c.getUrlAudio());
             btnPlayPausar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/pausa.png"))); 
-            
             if (timerProgreso != null) timerProgreso.start();
         }
-    }
 
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            cargarColaLateral(true); 
+        });
+    }
+    
+    
+    
+    
+    public void reproducirDesdePanel(java.util.List<entidades.Cancion> lista, int indice) {
+        listasDinamicas.CLLReproductor gestor = listasDinamicas.CLLReproductor.getInstancia();
+
+        if (gestor.getActual() != null) {
+            for (int i = indice; i < lista.size(); i++) {
+                entidades.Cancion nueva = lista.get(i);
+
+                if (nueva.getId() != gestor.getActual().getId()) {
+                    gestor.insertar(nueva);
+                }
+            }
+            javax.swing.SwingUtilities.invokeLater(() -> cargarColaLateral(false));
+            System.out.println("Canciones agregadas a la fila.");
+
+        } else {
+            gestor.setNuevaCola(lista, indice);
+
+            reproducirCancionActual(); 
+
+            javax.swing.SwingUtilities.invokeLater(() -> cargarColaLateral(true));
+
+            System.out.println("Nueva lista de reproducción iniciada.");
+        }
+    }
+    
+    
     private void actualizarBarraGUI() {
         if (gestorAudio != null && gestorAudio.getDuracionTotal() > 0) {
             double actual = gestorAudio.getTiempoActual();
@@ -298,7 +347,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
     }
     
     public void cargarPlaylistsLateral() {
-        // 1. Configuración inicial
         panListaPlaylists.removeAll();
         panListaPlaylists.setLayout(new BoxLayout(panListaPlaylists, BoxLayout.Y_AXIS));
         panListaPlaylists.setBackground(new Color(18, 18, 18));
@@ -372,86 +420,165 @@ public class FrmPrincipal extends javax.swing.JFrame {
         return panel;
     }
     
-    public void cargarColaLateral() {
+    public void cargarColaLateral(boolean subirScroll) {
         panContenido2.removeAll();
-        panContenido2.setLayout(new BoxLayout(panContenido2, BoxLayout.Y_AXIS));
-        panContenido2.setBackground(new Color(18, 18, 18));
+        panContenido2.setLayout(new javax.swing.BoxLayout(panContenido2, javax.swing.BoxLayout.Y_AXIS));
+        panContenido2.setBackground(new java.awt.Color(18, 18, 18));
 
-        java.util.List<Cancion> cola = listasDinamicas.CLLReproductor.getInstancia().getColaActual();
+        listasDinamicas.CLLReproductor gestor = listasDinamicas.CLLReproductor.getInstancia();
+        entidades.Cancion cancionActual = gestor.getActual();
+        java.util.List<entidades.Cancion> colaFutura = gestor.getColaFutura();
 
-        if (cola != null && !cola.isEmpty()) {
-            
-            for (Cancion c : cola) {
-                String nombreArtista = "Desconocido";
-                if (c.getAlbum() != null && c.getAlbum().getArtista() != null) {
-                    nombreArtista = c.getAlbum().getArtista().getNombre();
-                }
-
-                JPanel item = crearItemCola(c.getTitulo(), nombreArtista);
-                
-                panContenido2.add(item);
-                
-                panContenido2.add(Box.createRigidArea(new Dimension(0, 1)));
-            }
-        } else {
-             JLabel lblVacio = new JLabel("Cola vacía");
-             lblVacio.setForeground(Color.GRAY);
-             panContenido2.add(lblVacio);
+        if (cancionActual != null) {
+            javax.swing.JLabel lblNow = new javax.swing.JLabel("  Sonando ahora");
+            lblNow.setForeground(new java.awt.Color(180, 180, 180));
+            lblNow.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 12));
+            lblNow.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 5, 5, 5));
+            panContenido2.add(lblNow);
+            panContenido2.add(crearItemCola(cancionActual, true));
+            panContenido2.add(javax.swing.Box.createRigidArea(new java.awt.Dimension(0, 15)));
         }
 
-        // 4. Refrescar visualmente
+        if (colaFutura != null && !colaFutura.isEmpty()) {
+            javax.swing.JLabel lblNext = new javax.swing.JLabel("  Siguiente en la cola");
+            lblNext.setForeground(new java.awt.Color(180, 180, 180));
+            lblNext.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 12));
+            lblNext.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+            panContenido2.add(lblNext);
+
+            for (entidades.Cancion c : colaFutura) {
+                panContenido2.add(crearItemCola(c, false));
+            }
+        }
+
+        if (cancionActual == null && (colaFutura == null || colaFutura.isEmpty())) {
+            javax.swing.JLabel lblVacio = new javax.swing.JLabel("Cola vacía");
+            lblVacio.setForeground(java.awt.Color.GRAY);
+            lblVacio.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+            panContenido2.add(javax.swing.Box.createVerticalGlue());
+            panContenido2.add(lblVacio);
+            panContenido2.add(javax.swing.Box.createVerticalGlue());
+        }
+
         panContenido2.revalidate();
         panContenido2.repaint();
+
+        if (subirScroll) {
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                if (scpColaHistorial != null) {
+                    scpColaHistorial.getVerticalScrollBar().setValue(0);
+                }
+            });
+        }
     }
 
-    private JPanel crearItemCola(String titulo, String artista) {
+    public void cargarColaLateral() {
+        cargarColaLateral(true);
+    }
+    
+    
+    private JPanel crearItemCola(entidades.Cancion c, boolean esActual) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-
-        panel.setMaximumSize(new Dimension(220, 55));
         
-        panel.setPreferredSize(new Dimension(200, 55));
-
+        panel.setMaximumSize(new Dimension(220, 60));
+        panel.setPreferredSize(new Dimension(200, 60));
+        
         panel.setBackground(new Color(18, 18, 18));
-        panel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 5));
+        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         panel.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        JLabel lblIcon = new JLabel("♫");
-        lblIcon.setForeground(new Color(100, 100, 100));
-        lblIcon.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        JLabel lblImagen = new JLabel();
+        lblImagen.setPreferredSize(new Dimension(50, 50));
+        lblImagen.setMaximumSize(new Dimension(50, 50));
+        lblImagen.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        
+        lblImagen.setText(esActual ? "▶" : "♫");
+        lblImagen.setForeground(esActual ? new Color(29, 185, 84) : new Color(80, 80, 80));
+        lblImagen.setFont(new java.awt.Font("Segoe UI", 0, 18));
+        
+        if (c.getAlbum() != null) {
+            int idAlbum = c.getAlbum().getId();
+            
+            if (cacheColaLateral.containsKey(idAlbum)) {
+                lblImagen.setText("");
+                lblImagen.setIcon(cacheColaLateral.get(idAlbum));
+            } else {
+                // B. Si no, descargamos en segundo plano (Hilo aparte)
+                new Thread(() -> {
+                    try {
+                        String urlBD = logica.BLLAlbum.obtenerUrlImagenAlbum(idAlbum);
+                        if (urlBD != null && !urlBD.isEmpty()) {
+                            if (urlBD.contains("drive.google.com") && urlBD.contains("/d/")) {
+                                java.util.regex.Matcher m = java.util.regex.Pattern.compile("/d/([a-zA-Z0-9_-]+)").matcher(urlBD);
+                                if (m.find()) urlBD = "https://drive.google.com/uc?export=download&id=" + m.group(1);
+                            }
+                            
+                            java.net.URL url = new java.net.URL(urlBD);
+                            java.awt.image.BufferedImage img = javax.imageio.ImageIO.read(url);
+                            
+                            if (img != null) {
+                                java.awt.Image dimg = img.getScaledInstance(50, 50, java.awt.Image.SCALE_SMOOTH);
+                                javax.swing.ImageIcon iconoFinal = new javax.swing.ImageIcon(dimg);
+                                
+                                cacheColaLateral.put(idAlbum, iconoFinal);
+                                
+                                javax.swing.SwingUtilities.invokeLater(() -> {
+                                    lblImagen.setText("");
+                                    lblImagen.setIcon(iconoFinal);
+                                });
+                            }
+                        }
+                    } catch (Exception e) {
+                    }
+                }).start();
+            }
+        }
 
         JPanel panTextos = new JPanel();
         panTextos.setLayout(new BoxLayout(panTextos, BoxLayout.Y_AXIS));
         panTextos.setOpaque(false);
         panTextos.setAlignmentY(java.awt.Component.CENTER_ALIGNMENT); 
+        
+        Color colorTitulo = esActual ? new Color(29, 185, 84) : Color.WHITE;
 
-        JLabel lblTitulo = new JLabel(titulo);
-        lblTitulo.setForeground(Color.WHITE);
-        lblTitulo.setFont(new java.awt.Font("Segoe UI", 0, 13));
+        JLabel lblTitulo = new JLabel(c.getTitulo());
+        lblTitulo.setForeground(colorTitulo);
+        lblTitulo.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
 
-        JLabel lblArtista = new JLabel(artista);
+        String nombreArt = (c.getNombreArtista() != null) ? c.getNombreArtista() : "Desconocido";
+        JLabel lblArtista = new JLabel(nombreArt);
         lblArtista.setForeground(new Color(150, 150, 150)); 
         lblArtista.setFont(new java.awt.Font("Segoe UI", 0, 11)); 
 
         panTextos.add(lblTitulo);
         panTextos.add(lblArtista);
 
-        JLabel lblDuracion = new JLabel("3:45");
+        String duracionTexto = obtenerTiempoFormateado(c.getDuracion()); 
+        JLabel lblDuracion = new JLabel(duracionTexto);
         lblDuracion.setForeground(new Color(100, 100, 100));
         lblDuracion.setFont(new java.awt.Font("Segoe UI", 0, 11));
 
-        panel.add(lblIcon);
-        panel.add(Box.createRigidArea(new Dimension(10, 0))); 
+        panel.add(lblImagen);
+        panel.add(Box.createRigidArea(new Dimension(10, 0)));
         panel.add(panTextos);
-        panel.add(Box.createHorizontalGlue()); 
+        panel.add(Box.createHorizontalGlue());
         panel.add(lblDuracion);
         panel.add(Box.createRigidArea(new Dimension(5, 0))); 
 
         panel.addMouseListener(new MouseAdapter() {
             @Override
+            public void mouseClicked(MouseEvent e) {
+                if (!esActual) {
+                    saltarACancionDeLaCola(c);
+                }
+            }
+
+            @Override
             public void mouseEntered(MouseEvent e) {
                 panel.setBackground(new Color(40, 40, 40));
             }
+
             @Override
             public void mouseExited(MouseEvent e) {
                 panel.setBackground(new Color(18, 18, 18));
@@ -461,14 +588,50 @@ public class FrmPrincipal extends javax.swing.JFrame {
         return panel;
     }
     
+    private void saltarACancionDeLaCola(entidades.Cancion destino) {
+        listasDinamicas.CLLReproductor gestor = listasDinamicas.CLLReproductor.getInstancia();
+
+        if (gestor.getActual() != null && gestor.getActual().getId() == destino.getId()) {
+            return;
+        }
+        boolean encontrada = false;
+
+        while (gestor.obtenerSiguiente() != null) {
+            if (gestor.getActual().getId() == destino.getId()) {
+                encontrada = true;
+                break;
+            }
+        }
+
+        if (encontrada) {
+            reproducirCancionActual();
+
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                cargarColaLateral();
+            });
+        } else {
+            System.out.println("No se encontró la canción en la cola de reproducción.");
+        }
+    }
+    
     public void cargarHistorialLateral() {
         panContenido2.removeAll();
-        panContenido2.setLayout(new BoxLayout(panContenido2, BoxLayout.Y_AXIS));
-        panContenido2.setBackground(new Color(18, 18, 18));
+        panContenido2.setLayout(new javax.swing.BoxLayout(panContenido2, javax.swing.BoxLayout.Y_AXIS));
+        panContenido2.setBackground(new java.awt.Color(18, 18, 18));
 
-         java.util.List<Cancion> historial = logica.BLLHistorialReproduccion.obtenerCancionesRecientes();
-        
-        
+        java.util.List<entidades.Cancion> historial = logica.BLLHistorialReproduccion.obtenerCancionesRecientes();
+
+        if (historial != null && !historial.isEmpty()) {
+            for (entidades.Cancion c : historial) {
+                panContenido2.add(crearItemCola(c, false));
+                panContenido2.add(javax.swing.Box.createRigidArea(new java.awt.Dimension(0, 1)));
+            }
+        } else {
+            javax.swing.JLabel lblVacio = new javax.swing.JLabel("  Sin reproducciones recientes");
+            lblVacio.setForeground(java.awt.Color.GRAY);
+            panContenido2.add(lblVacio);
+        }
+
         panContenido2.revalidate();
         panContenido2.repaint();
     }
@@ -481,8 +644,18 @@ public class FrmPrincipal extends javax.swing.JFrame {
     }
     
     public void mostrarDetalleAlbum(entidades.Album album) {
-        // Creamos el panel de detalle pasándole 'this' (el principal) y el álbum
-        panDetalleAlbum panelDetalle = new panDetalleAlbum(this, album);
+        
+        entidades.Artista artistaEncontrado = null;
+
+        try {
+            artistaEncontrado = Logica.BLLArtista.obtenerDatosArtista(album.getArtista().getNombre());
+            
+        } catch (Exception e) {
+            System.out.println("Error recuperando artista para el detalle: " + e.getMessage());
+        }
+
+        panDetalleAlbum panelDetalle = new panDetalleAlbum(this, album, artistaEncontrado);
+        
         mostrarPanel(panelDetalle);
     }
     
@@ -819,43 +992,45 @@ public class FrmPrincipal extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAnteriorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnteriorActionPerformed
-        listasDinamicas.CLLReproductor.getInstancia().obtenerAnterior();
-        reproducirCancionActual();
+        entidades.Cancion c = listasDinamicas.CLLReproductor.getInstancia().obtenerAnterior();
+    
+        if (c != null) {
+            reproducirCancionActual();
+        }
     }//GEN-LAST:event_btnAnteriorActionPerformed
 
     private void btnColaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnColaActionPerformed
-        cargarColaLateral();
+        javax.swing.SwingUtilities.invokeLater(() -> cargarColaLateral());
     }//GEN-LAST:event_btnColaActionPerformed
 
     private void btnHistorialActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHistorialActionPerformed
-        cargarHistorialLateral();
+        javax.swing.SwingUtilities.invokeLater(() -> cargarHistorialLateral());
     }//GEN-LAST:event_btnHistorialActionPerformed
 
     private void btnPlayPausarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPlayPausarActionPerformed
         if (gestorAudio == null) return;
-
+    
+        if (listasDinamicas.CLLReproductor.getInstancia().getActual() == null) return;
 
         if (gestorAudio.estaReproduciendo()) {
-            // --- CASO 1: ESTÁ SONANDO -> QUEREMOS PAUSAR ---
             gestorAudio.pausar();
-
-            // Al pausar, mostramos el botón de "PLAY" (para que pueda volver a arrancar)
-            // Asegúrate de que el nombre del archivo sea correcto (ej: play.png, play-chiquito.png, etc.)
             btnPlayPausar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/play.png"))); 
-
         } else {
-            // --- CASO 2: ESTÁ PAUSADO -> QUEREMOS CONTINUAR ---
             gestorAudio.continuar();
-
-            // Al reproducir, mostramos el botón de "PAUSA" (para que pueda detenerse)
             btnPlayPausar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/pausa.png"))); 
         }
+        btnPlayPausar.repaint();
     }//GEN-LAST:event_btnPlayPausarActionPerformed
 
     private void btnSiguienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSiguienteActionPerformed
-        listasDinamicas.CLLReproductor.getInstancia().obtenerSiguiente();
-        // 2. Reproducir y actualizar foto
-        reproducirCancionActual();
+        entidades.Cancion c = listasDinamicas.CLLReproductor.getInstancia().obtenerSiguiente();
+    
+        if (c != null) {
+            reproducirCancionActual();
+        } else {
+            if (gestorAudio != null) gestorAudio.pausar();
+            btnPlayPausar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/play.png")));
+        }
     }//GEN-LAST:event_btnSiguienteActionPerformed
 
     private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed

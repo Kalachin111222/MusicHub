@@ -121,4 +121,8 @@ public class Cancion {
     public String getNombreArtista() {
         return (artista != null) ? artista.getNombre() : "Desconocido";
     }
+    
+    public void setNombreArtista(String nombre) {
+        this.artista.setNombre(nombre);
+    }
 }
