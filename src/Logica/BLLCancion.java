@@ -235,7 +235,7 @@ public class BLLCancion {
         if (canciones != null && !canciones.isEmpty()) {
             CLLCancion.getInstancia().setListaCanciones(canciones);
         } else {
-            mostrarAdvertencia("No hay canciones nuevas de este género para ti.");
+            System.out.println("No hay canciones nuevas de este género para ti.");
         }
         
         return canciones;

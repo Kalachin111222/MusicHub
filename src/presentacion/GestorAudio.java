@@ -109,6 +109,8 @@ public class GestorAudio {
                 enPausa = false;
                 System.out.println("▶ Reanudando audio...");
             }
+        } else {
+            System.out.println("⚠️ No hay audio cargado para continuar");
         }
     }
     

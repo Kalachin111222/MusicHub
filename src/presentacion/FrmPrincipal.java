@@ -12,6 +12,8 @@ import java.awt.event.MouseEvent;
 import javax.swing.*;
 import entidades.Cancion;
 import estructuras.ListaCircularDoble;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -41,7 +43,12 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private static FrmPrincipal instanciaGlobal;
     private java.util.Map<Integer, javax.swing.Icon> cacheColaLateral = new java.util.HashMap<>();
     private double volumenAnterior = 0.5;
-    private boolean modoRepetirUna = false; 
+    private boolean modoRepetirUna = false;
+    
+    private final String PLACEHOLDER_BUSQUEDA_PLAYLIST = "Buscar playlist...";
+    private final String PLACEHOLDER_BUSQUEDA_ARTISTA = "Buscar artista...";
+    private final Color COLOR_PLACEHOLDER = new Color(180, 180, 180);
+    private final Color COLOR_TEXTO = new Color(255, 255, 255);
 
 
     public static FrmPrincipal getInstanciaGlobal() {
@@ -197,16 +204,14 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
                 if (anchoBarra > 0) {
                     int nuevoValor = (int) ((double) mouseX / anchoBarra * 100);
-                    nuevoValor = Math.max(0, Math.min(100, nuevoValor)); // Limitar entre 0-100
+                    nuevoValor = Math.max(0, Math.min(100, nuevoValor));
 
                     pgbVolumen.setValue(nuevoValor);
 
-                    // Aplicar volumen al reproductor
                     if (gestorAudio != null) {
                         gestorAudio.setVolumen(nuevoValor / 100.0);
                     }
 
-                    // Cambiar icono según el valor
                     if (nuevoValor == 0) {
                         btnVolumen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/muteado-chiquito.png")));
                     } else {
@@ -224,6 +229,47 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
         pgbVolumen.addMouseListener(controlVolumen);
         pgbVolumen.addMouseMotionListener(controlVolumen);
+        
+        txtBusquedaPlaylist.setText(PLACEHOLDER_BUSQUEDA_PLAYLIST);
+        txtBusquedaPlaylist.setForeground(COLOR_PLACEHOLDER);
+
+        txtBusquedaPlaylist.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (txtBusquedaPlaylist.getText().equals(PLACEHOLDER_BUSQUEDA_PLAYLIST)) {
+                    txtBusquedaPlaylist.setText("");
+                    txtBusquedaPlaylist.setForeground(COLOR_TEXTO);
+                }
+            }
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (txtBusquedaPlaylist.getText().trim().isEmpty()) {
+                    txtBusquedaPlaylist.setText(PLACEHOLDER_BUSQUEDA_PLAYLIST);
+                    txtBusquedaPlaylist.setForeground(COLOR_PLACEHOLDER);
+                    cargarPlaylistsLateral();
+                }
+            }
+        });
+        
+        jTextField1.setText(PLACEHOLDER_BUSQUEDA_ARTISTA);
+        jTextField1.setForeground(COLOR_PLACEHOLDER);
+
+        jTextField1.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (jTextField1.getText().equals(PLACEHOLDER_BUSQUEDA_ARTISTA)) {
+                    jTextField1.setText("");
+                    jTextField1.setForeground(COLOR_TEXTO);
+                }
+            }
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (jTextField1.getText().trim().isEmpty()) {
+                    jTextField1.setText(PLACEHOLDER_BUSQUEDA_ARTISTA);
+                    jTextField1.setForeground(COLOR_PLACEHOLDER);
+                }
+            }
+        });
     }
     
     private void cargarImagenPortada(String url, javax.swing.JLabel label) {
@@ -314,52 +360,18 @@ public class FrmPrincipal extends javax.swing.JFrame {
         });
     }
     
-    
-    
-    
-//    public void reproducirDesdePanel(java.util.List<entidades.Cancion> lista, int indice) {
-//        listasDinamicas.CLLReproductor gestor = listasDinamicas.CLLReproductor.getInstancia();
-//
-//        if (lista.size() == 1) {
-//            gestor.setNuevaCola(lista, 0);
-//            System.out.println("Reproduciendo canción individual seleccionada.");
-//        } 
-//        else if (gestor.getActual() != null) {
-//            for (int i = indice; i < lista.size(); i++) {
-//                entidades.Cancion nueva = lista.get(i);
-//                // Evitamos duplicar la que ya está sonando en este instante
-//                if (nueva.getId() != gestor.getActual().getId()) {
-//                    gestor.insertar(nueva);
-//                }
-//            }
-//            System.out.println("Lista agregada a la cola de reproducción.");
-//        } 
-//        else {
-//            gestor.setNuevaCola(lista, indice);
-//            System.out.println("Nueva lista de reproducción iniciada.");
-//        }
-//
-//        reproducirCancionActual(); 
-//
-//        javax.swing.SwingUtilities.invokeLater(() -> {
-//            cargarColaLateral(true);
-//        });
-//    }
     public void reproducirDesdePanel(java.util.List<entidades.Cancion> lista, int indice) {
         listasDinamicas.CLLReproductor gestor = listasDinamicas.CLLReproductor.getInstancia();
 
-        // Validación
         if (lista == null || indice < 0 || indice >= lista.size()) {
             System.err.println("Error: Índice fuera de rango o lista nula.");
             return;
         }
 
         entidades.Cancion seleccionada = lista.get(indice);
-        
         entidades.Cancion actual = gestor.getActual();
 
         if (actual == null) {
-            // CASO 1: No hay nada sonando → Crear nueva cola
             java.util.List<entidades.Cancion> listaUnica = new java.util.ArrayList<>();
             listaUnica.add(seleccionada);
             gestor.setNuevaCola(listaUnica, 0);
@@ -369,14 +381,11 @@ public class FrmPrincipal extends javax.swing.JFrame {
             gestor.insertar(seleccionada);
             System.out.println("Agregada a la cola: " + seleccionada.getTitulo());
 
-            // Actualizar solo la vista de la cola lateral
             javax.swing.SwingUtilities.invokeLater(() -> {
-                cargarColaLateral(false); // false = no subir scroll
             });
-            return; // IMPORTANTE: No reproducir inmediatamente
+            return;
         }
 
-        // Solo llegamos aquí si creamos una nueva cola
         reproducirCancionActual(); 
         javax.swing.SwingUtilities.invokeLater(() -> {
             cargarColaLateral(true); 
@@ -386,16 +395,14 @@ public class FrmPrincipal extends javax.swing.JFrame {
     public void reproducirListaCompleta(java.util.List<entidades.Cancion> lista, int indiceInicio) {
         listasDinamicas.CLLReproductor gestor = listasDinamicas.CLLReproductor.getInstancia();
 
-        // Validación
         if (lista == null || lista.isEmpty()) {
             System.err.println("Error: Lista vacía.");
             return;
         }
-
         if (indiceInicio < 0 || indiceInicio >= lista.size()) {
             indiceInicio = 0;
         }
-
+        
         entidades.Cancion actual = gestor.getActual();
 
         if (actual == null) {
@@ -409,7 +416,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
             });
             return;
         }
-
         int agregadas = 0;
 
         for (entidades.Cancion c : lista) {
@@ -424,22 +430,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
         });
     }
     
-    
-    
-    
-    
-//    private void actualizarBarraGUI() {
-//        if (gestorAudio != null && gestorAudio.getDuracionTotal() > 0) {
-//            double actual = gestorAudio.getTiempoActual();
-//            double total = gestorAudio.getDuracionTotal();
-//
-//            pgbProgreso.setMaximum((int) total);
-//            pgbProgreso.setValue((int) actual);
-//
-//            lblTmpActual.setText(obtenerTiempoFormateado(actual));
-//            lblDuracion.setText(obtenerTiempoFormateado(total));
-//        }
-//    }
     
     private void actualizarBarraGUI() {
         if (gestorAudio != null && gestorAudio.getDuracionTotal() > 0) {
@@ -528,7 +518,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
-        // Configuración de estilo
         panel.setMaximumSize(new Dimension(220, 45));
         panel.setPreferredSize(new Dimension(190, 45));
         panel.setBackground(new Color(18, 18, 18));
@@ -871,8 +860,8 @@ public class FrmPrincipal extends javax.swing.JFrame {
         btnAnterior = new BotonPersonalizado(new java.awt.Color(0,0,0), new java.awt.Color(50,50,50), new java.awt.Color(40,40,40));
         btnSiguiente = new BotonPersonalizado(new java.awt.Color(0,0,0), new java.awt.Color(50,50,50), new java.awt.Color(40,40,40));
         jPanel1 = new PanelPersonalizado();
-        jButton11 = new BotonPersonalizado(new java.awt.Color(25,25,25));
-        jTextField2 = new javax.swing.JTextField();
+        btnBuscarPlaylist = new BotonPersonalizado(new java.awt.Color(25,25,25));
+        txtBusquedaPlaylist = new javax.swing.JTextField();
         scpPlaylists = new javax.swing.JScrollPane();
         panListaPlaylists = new javax.swing.JPanel();
         jPanel3 = new PanelPersonalizado();
@@ -882,7 +871,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         panContenido2 = new javax.swing.JPanel();
         btnHome = new BotonPersonalizado(new java.awt.Color(0,0,0));
         jTextField1 = new javax.swing.JTextField();
-        btnBuscar = new javax.swing.JButton();
+        btnBuscarArtista = new BotonPersonalizado(new java.awt.Color(0,0,0), new java.awt.Color(50,50,50), new java.awt.Color(40,40,40));
         jScrollPane1 = new javax.swing.JScrollPane();
         panContenido = new javax.swing.JPanel();
         btnVolver = new BotonPersonalizado(new java.awt.Color(0,0,0), new java.awt.Color(50,50,50), new java.awt.Color(40,40,40));
@@ -943,11 +932,18 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
         jPanel1.setBackground(new java.awt.Color(25, 25, 25));
 
-        jButton11.setBackground(new java.awt.Color(40, 40, 40));
-        jButton11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/buscar (1).png"))); // NOI18N
+        btnBuscarPlaylist.setBackground(new java.awt.Color(40, 40, 40));
+        btnBuscarPlaylist.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/buscar (1).png"))); // NOI18N
+        btnBuscarPlaylist.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBuscarPlaylistActionPerformed(evt);
+            }
+        });
 
-        jTextField2.setBackground(new java.awt.Color(25, 25, 25));
-        jTextField2.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        txtBusquedaPlaylist.setBackground(new java.awt.Color(25, 25, 25));
+        txtBusquedaPlaylist.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        txtBusquedaPlaylist.setForeground(new java.awt.Color(204, 204, 204));
+        txtBusquedaPlaylist.setText("Buscar playlists...");
 
         scpPlaylists.setMaximumSize(new java.awt.Dimension(238, 32767));
 
@@ -964,9 +960,9 @@ public class FrmPrincipal extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(scpPlaylists, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(jButton11)
+                        .addComponent(btnBuscarPlaylist)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(txtBusquedaPlaylist, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -974,8 +970,8 @@ public class FrmPrincipal extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton11))
+                    .addComponent(txtBusquedaPlaylist, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnBuscarPlaylist))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(scpPlaylists, javax.swing.GroupLayout.DEFAULT_SIZE, 662, Short.MAX_VALUE)
                 .addContainerGap())
@@ -1042,11 +1038,18 @@ public class FrmPrincipal extends javax.swing.JFrame {
             }
         });
 
-        jTextField1.setBackground(new java.awt.Color(40, 40, 40));
+        jTextField1.setBackground(new java.awt.Color(0, 0, 0));
         jTextField1.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
+        jTextField1.setForeground(new java.awt.Color(204, 204, 204));
+        jTextField1.setText("¿A quién quieres escuchar?");
 
-        btnBuscar.setBackground(new java.awt.Color(40, 40, 40));
-        btnBuscar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/buscar (1).png"))); // NOI18N
+        btnBuscarArtista.setBackground(new java.awt.Color(0, 0, 0));
+        btnBuscarArtista.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/buscar (1).png"))); // NOI18N
+        btnBuscarArtista.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBuscarArtistaActionPerformed(evt);
+            }
+        });
 
         jScrollPane1.setBackground(new java.awt.Color(40, 40, 40));
         jScrollPane1.setMaximumSize(new java.awt.Dimension(1016, 32767));
@@ -1122,7 +1125,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
                         .addGap(484, 484, 484)
                         .addComponent(btnHome)
                         .addGap(18, 18, 18)
-                        .addComponent(btnBuscar)
+                        .addComponent(btnBuscarArtista)
                         .addGap(0, 0, 0)
                         .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 344, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1178,7 +1181,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
                     .addGroup(panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(btnHome)
-                        .addComponent(btnBuscar))
+                        .addComponent(btnBuscarArtista))
                     .addComponent(btnVolver)
                     .addComponent(btnPerfil))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -1263,8 +1266,12 @@ public class FrmPrincipal extends javax.swing.JFrame {
             gestorAudio.pausar();
             btnPlayPausar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/play.png"))); 
         } else {
-            gestorAudio.continuar();
-            btnPlayPausar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/pausa.png"))); 
+            if (gestorAudio.getDuracionTotal() > 0) {
+                gestorAudio.continuar();
+                btnPlayPausar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/pausa.png"))); 
+            } else {
+                System.out.println("⚠️ No hay audio para reproducir");
+            }
         }
         btnPlayPausar.repaint();
     }//GEN-LAST:event_btnPlayPausarActionPerformed
@@ -1275,12 +1282,18 @@ public class FrmPrincipal extends javax.swing.JFrame {
         if (c != null) {
             reproducirCancionActual();
         } else {
-            if (gestorAudio != null) gestorAudio.pausar();
+            if (gestorAudio != null) gestorAudio.detener();
             if (timerProgreso != null) timerProgreso.stop();
 
+            // Limpiar barra de progreso
             pgbProgreso.setValue(0);
             lblTmpActual.setText("00:00");
             lblDuracion.setText("00:00");
+
+            lblTitulo.setText("-- --");
+            lblArtista.setText("-- --");
+            lblImagenCancion.setIcon(null);
+            lblImagenCancion.setText("...");
 
             btnPlayPausar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/play.png")));
 
@@ -1343,18 +1356,111 @@ public class FrmPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_btnVolumenActionPerformed
 
     private void btnBucleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBucleActionPerformed
-        modoRepetirUna = !modoRepetirUna; // Alternar estado
+        modoRepetirUna = !modoRepetirUna;
     
         if (modoRepetirUna) {
-            // Activar bucle - Ícono verde
             btnBucle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/bucle-verde-chiquito.png")));
             System.out.println("🔁 Modo repetir UNA activado");
         } else {
-            // Desactivar bucle - Ícono normal
             btnBucle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/bucle2-chiquito.png")));
             System.out.println("➡️ Modo normal activado");
         }
     }//GEN-LAST:event_btnBucleActionPerformed
+
+    private void btnBuscarPlaylistActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarPlaylistActionPerformed
+        String textoBusqueda = txtBusquedaPlaylist.getText().trim();
+    
+        if (textoBusqueda.isEmpty() || textoBusqueda.equals(PLACEHOLDER_BUSQUEDA_PLAYLIST)) {
+            cargarPlaylistsLateral();
+            return;
+        }
+
+        if (logica.BLLUsuario.hayUsuarioLogueado()) {
+            int idUsuario = logica.BLLUsuario.getUsuarioActual().getId();
+
+            java.util.List<entidades.Playlist> todasPlaylists = logica.BLLPlaylist.obtenerPlaylistsUsuario(idUsuario);
+
+            java.util.List<entidades.Playlist> playlistsFiltradas = new java.util.ArrayList<>();
+
+            if (todasPlaylists != null) {
+                for (entidades.Playlist pl : todasPlaylists) {
+                    if (pl.getNombre().toLowerCase().contains(textoBusqueda.toLowerCase())) {
+                        playlistsFiltradas.add(pl);
+                    }
+                }
+            }
+
+            if (playlistsFiltradas.isEmpty()) {
+                JOptionPane.showMessageDialog(this, 
+                    "No se encontraron playlists con el nombre: \"" + textoBusqueda + "\"", 
+                    "Sin resultados", 
+                    JOptionPane.INFORMATION_MESSAGE);
+
+                cargarPlaylistsLateral();
+
+                txtBusquedaPlaylist.setText(PLACEHOLDER_BUSQUEDA_PLAYLIST);
+                txtBusquedaPlaylist.setForeground(COLOR_PLACEHOLDER);
+            } else {
+                cargarPlaylistsFiltradas(playlistsFiltradas);
+            }
+        }
+    }//GEN-LAST:event_btnBuscarPlaylistActionPerformed
+    
+    private void cargarPlaylistsFiltradas(java.util.List<entidades.Playlist> playlists) {
+        panListaPlaylists.removeAll();
+        panListaPlaylists.setLayout(new BoxLayout(panListaPlaylists, BoxLayout.Y_AXIS));
+        panListaPlaylists.setBackground(new Color(18, 18, 18));
+
+        if (playlists != null && !playlists.isEmpty()) {
+            for (entidades.Playlist pl : playlists) {
+                JPanel item = crearItemPlaylist(pl.getNombre(), false);
+                panListaPlaylists.add(item);
+                panListaPlaylists.add(Box.createRigidArea(new Dimension(0, 2)));
+            }
+        }
+        
+        JPanel btnCrear = crearItemPlaylist("Crear nueva playlist", true);
+        panListaPlaylists.add(btnCrear);
+
+        panListaPlaylists.revalidate();
+        panListaPlaylists.repaint();
+    }
+    
+    
+    
+    private void btnBuscarArtistaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarArtistaActionPerformed
+        String textoBusqueda = jTextField1.getText().trim();
+    
+        if (textoBusqueda.isEmpty() || textoBusqueda.equals(PLACEHOLDER_BUSQUEDA_ARTISTA)) {
+            JOptionPane.showMessageDialog(this, 
+                "Por favor, ingresa el nombre de un artista", 
+                "Campo vacío", 
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        Artista artistaEncontrado = Logica.BLLArtista.obtenerDatosArtista(textoBusqueda);
+
+        if (artistaEncontrado != null) {
+            // Artista encontrado - Navegar a su perfil
+            System.out.println("Artista encontrado: " + artistaEncontrado.getNombre());
+            panArtista panelArtista = new panArtista(this, artistaEncontrado);
+            mostrarPanel(panelArtista);
+
+            jTextField1.setText(PLACEHOLDER_BUSQUEDA_ARTISTA);
+            jTextField1.setForeground(COLOR_PLACEHOLDER);
+        } else {
+            JOptionPane.showMessageDialog(this, 
+                "No se encontró el artista: \"" + textoBusqueda + "\"", 
+                "Artista no encontrado", 
+                JOptionPane.INFORMATION_MESSAGE);
+
+            mostrarPanel(panHome);
+
+            jTextField1.setText(PLACEHOLDER_BUSQUEDA_ARTISTA);
+            jTextField1.setForeground(COLOR_PLACEHOLDER);
+        }
+    }//GEN-LAST:event_btnBuscarArtistaActionPerformed
 
     /**
      * @param args the command line arguments
@@ -1396,7 +1502,8 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private javax.swing.JButton btnAgregarPlaylist;
     private javax.swing.JButton btnAnterior;
     private javax.swing.JButton btnBucle;
-    private javax.swing.JButton btnBuscar;
+    private javax.swing.JButton btnBuscarArtista;
+    private javax.swing.JButton btnBuscarPlaylist;
     private javax.swing.JButton btnCola;
     private javax.swing.JButton btnHistorial;
     private javax.swing.JButton btnHome;
@@ -1405,12 +1512,10 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private javax.swing.JButton btnSiguiente;
     private javax.swing.JButton btnVolumen;
     private javax.swing.JButton btnVolver;
-    private javax.swing.JButton jButton11;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
     private javax.swing.JLabel lblArtista;
     private javax.swing.JLabel lblDuracion;
     private javax.swing.JLabel lblImagenCancion;
@@ -1424,5 +1529,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private javax.swing.JProgressBar pgbVolumen;
     private javax.swing.JScrollPane scpColaHistorial;
     private javax.swing.JScrollPane scpPlaylists;
+    private javax.swing.JTextField txtBusquedaPlaylist;
     // End of variables declaration//GEN-END:variables
 }
