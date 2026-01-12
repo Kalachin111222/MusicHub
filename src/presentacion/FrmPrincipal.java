@@ -37,9 +37,11 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private panHome panHome;
     private panPlaylist panPlaylist;
     private panArtista panArtista;
-//    private panPerfil panPerfil;
+    private panPerfil panPerfil;
     private static FrmPrincipal instanciaGlobal;
     private java.util.Map<Integer, javax.swing.Icon> cacheColaLateral = new java.util.HashMap<>();
+    private double volumenAnterior = 0.5;
+    private boolean modoRepetirUna = false; 
 
 
     public static FrmPrincipal getInstanciaGlobal() {
@@ -92,7 +94,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         jScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         panHome = new panHome(this);
-//        panPerfil = new panPerfil(this);
+        panPerfil = new panPerfil(instanciaGlobal);
 
         configurarUsuarioActual();
 
@@ -183,6 +185,45 @@ public class FrmPrincipal extends javax.swing.JFrame {
                 }
             }
         });
+        
+        pgbVolumen.setMinimum(0);
+        pgbVolumen.setMaximum(100);
+        pgbVolumen.setValue(50);
+
+        MouseAdapter controlVolumen = new MouseAdapter() {
+            private void cambiarVolumen(MouseEvent e) {
+                int mouseX = e.getX();
+                int anchoBarra = pgbVolumen.getWidth();
+
+                if (anchoBarra > 0) {
+                    int nuevoValor = (int) ((double) mouseX / anchoBarra * 100);
+                    nuevoValor = Math.max(0, Math.min(100, nuevoValor)); // Limitar entre 0-100
+
+                    pgbVolumen.setValue(nuevoValor);
+
+                    // Aplicar volumen al reproductor
+                    if (gestorAudio != null) {
+                        gestorAudio.setVolumen(nuevoValor / 100.0);
+                    }
+
+                    // Cambiar icono según el valor
+                    if (nuevoValor == 0) {
+                        btnVolumen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/muteado-chiquito.png")));
+                    } else {
+                        btnVolumen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/volumen-chiquito.png")));
+                    }
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) { cambiarVolumen(e); }
+
+            @Override
+            public void mouseDragged(MouseEvent e) { cambiarVolumen(e); }
+        };
+
+        pgbVolumen.addMouseListener(controlVolumen);
+        pgbVolumen.addMouseMotionListener(controlVolumen);
     }
     
     private void cargarImagenPortada(String url, javax.swing.JLabel label) {
@@ -405,22 +446,20 @@ public class FrmPrincipal extends javax.swing.JFrame {
             double actual = gestorAudio.getTiempoActual();
             double total = gestorAudio.getDuracionTotal();
 
-            // 1. Actualización visual de la barra y etiquetas
             pgbProgreso.setMaximum((int) total);
             pgbProgreso.setValue((int) actual);
-
             lblTmpActual.setText(obtenerTiempoFormateado(actual));
             lblDuracion.setText(obtenerTiempoFormateado(total));
 
-            // 2. VALIDACIÓN DE FIN DE CANCIÓN
-            // Comparamos si el tiempo actual llegó al total. 
-            // Usamos -0.5 como margen de seguridad para que el cambio sea fluido.
             if (actual >= total - 0.5 && actual > 0) {
-                System.out.println("Fin de canción detectado. Avanzando...");
+                System.out.println("Fin de canción detectado.");
 
-                // Llamamos al evento del botón siguiente programáticamente.
-                // Pasamos 'null' porque el método no usa el objeto 'evt'.
-                btnSiguienteActionPerformed(null);
+                if (modoRepetirUna) {
+                    System.out.println("🔁 Repitiendo canción...");
+                    gestorAudio.saltarA(0); // Volver al inicio
+                } else {
+                    btnSiguienteActionPerformed(null);
+                }
             }
         }
     }
@@ -807,7 +846,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
     * Actualiza las estadísticas de panHome si está visible
     */
     private void actualizarEstadisticasHome() {
-        // Solo actualizar si panHome está activo
         if (panelActual instanceof panHome) {
             ((panHome) panelActual).cargarDatosUsuario();
         }
@@ -849,6 +887,10 @@ public class FrmPrincipal extends javax.swing.JFrame {
         panContenido = new javax.swing.JPanel();
         btnVolver = new BotonPersonalizado(new java.awt.Color(0,0,0), new java.awt.Color(50,50,50), new java.awt.Color(40,40,40));
         btnAgregarPlaylist = new BotonPersonalizado(new java.awt.Color(0,0,0), new java.awt.Color(50,50,50), new java.awt.Color(40,40,40));
+        btnPerfil = new BotonPersonalizado(new java.awt.Color(0,0,0), new java.awt.Color(50,50,50), new java.awt.Color(40,40,40));
+        pgbVolumen = new ProgressBarPersonalizada();
+        btnVolumen = new BotonPersonalizado(new java.awt.Color(0,0,0), new java.awt.Color(50,50,50), new java.awt.Color(40,40,40));
+        btnBucle = new BotonPersonalizado(new java.awt.Color(0,0,0), new java.awt.Color(50,50,50), new java.awt.Color(40,40,40));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -1041,6 +1083,33 @@ public class FrmPrincipal extends javax.swing.JFrame {
             }
         });
 
+        btnPerfil.setBackground(new java.awt.Color(0, 0, 0));
+        btnPerfil.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/perfil3.png"))); // NOI18N
+        btnPerfil.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPerfilActionPerformed(evt);
+            }
+        });
+
+        pgbVolumen.setBackground(new java.awt.Color(204, 204, 204));
+
+        btnVolumen.setBackground(new java.awt.Color(0, 0, 0));
+        btnVolumen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/volumen-chiquito.png"))); // NOI18N
+        btnVolumen.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnVolumenActionPerformed(evt);
+            }
+        });
+
+        btnBucle.setBackground(new java.awt.Color(0, 0, 0));
+        btnBucle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/bucle2-chiquito.png"))); // NOI18N
+        btnBucle.setPreferredSize(new java.awt.Dimension(30, 30));
+        btnBucle.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBucleActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout panFondoLayout = new javax.swing.GroupLayout(panFondo);
         panFondo.setLayout(panFondoLayout);
         panFondoLayout.setHorizontalGroup(
@@ -1056,7 +1125,8 @@ public class FrmPrincipal extends javax.swing.JFrame {
                         .addComponent(btnBuscar)
                         .addGap(0, 0, 0)
                         .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 344, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnPerfil))
                     .addGroup(panFondoLayout.createSequentialGroup()
                         .addGroup(panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(panFondoLayout.createSequentialGroup()
@@ -1076,7 +1146,9 @@ public class FrmPrincipal extends javax.swing.JFrame {
                                         .addGap(18, 18, 18)
                                         .addComponent(btnPlayPausar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(18, 18, 18)
-                                        .addComponent(btnSiguiente, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(btnSiguiente, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(btnBucle, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                         .addGroup(panFondoLayout.createSequentialGroup()
                                             .addComponent(lblTmpActual)
@@ -1089,8 +1161,14 @@ public class FrmPrincipal extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(30, 30, 30))))
+                        .addGroup(panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(panFondoLayout.createSequentialGroup()
+                                .addComponent(btnVolumen)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(pgbVolumen, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(6, 6, 6)))))
+                .addGap(30, 30, 30))
         );
         panFondoLayout.setVerticalGroup(
             panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1101,12 +1179,10 @@ public class FrmPrincipal extends javax.swing.JFrame {
                         .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(btnHome)
                         .addComponent(btnBuscar))
-                    .addComponent(btnVolver))
+                    .addComponent(btnVolver)
+                    .addComponent(btnPerfil))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(panFondoLayout.createSequentialGroup()
-                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(panFondoLayout.createSequentialGroup()
                         .addGroup(panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1124,7 +1200,8 @@ public class FrmPrincipal extends javax.swing.JFrame {
                                     .addGroup(panFondoLayout.createSequentialGroup()
                                         .addComponent(lblTitulo)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(lblArtista)))
+                                        .addComponent(lblArtista))
+                                    .addComponent(btnBucle, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(4, 4, 4)
                                 .addGroup(panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(panFondoLayout.createSequentialGroup()
@@ -1135,7 +1212,16 @@ public class FrmPrincipal extends javax.swing.JFrame {
                                         .addGroup(panFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                             .addComponent(lblTmpActual, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                             .addComponent(lblDuracion))
-                                        .addGap(49, 49, 49))))))))
+                                        .addGap(49, 49, 49))))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panFondoLayout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(btnVolumen)
+                                .addGap(49, 49, 49))))
+                    .addGroup(panFondoLayout.createSequentialGroup()
+                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(pgbVolumen, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(58, 58, 58))))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -1189,19 +1275,15 @@ public class FrmPrincipal extends javax.swing.JFrame {
         if (c != null) {
             reproducirCancionActual();
         } else {
-            // No hay más canciones en la cola
             if (gestorAudio != null) gestorAudio.pausar();
-            if (timerProgreso != null) timerProgreso.stop(); // ← DETENER EL TIMER
+            if (timerProgreso != null) timerProgreso.stop();
 
-            // Resetear la barra de progreso
             pgbProgreso.setValue(0);
             lblTmpActual.setText("00:00");
             lblDuracion.setText("00:00");
 
-            // Cambiar ícono a play
             btnPlayPausar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/play.png")));
 
-            // Actualizar cola lateral para mostrar "Cola vacía"
             javax.swing.SwingUtilities.invokeLater(() -> {
                 cargarColaLateral(true);
             });
@@ -1223,9 +1305,56 @@ public class FrmPrincipal extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Primero reproduce una canción", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
+
         dlgSeleccionarPlaylist dialog = new dlgSeleccionarPlaylist(this, true, actual);
         dialog.setVisible(true);
+
+        if (panelActual instanceof panPlaylist) {
+            ((panPlaylist) panelActual).cargarDatosPlaylist();
+        }
     }//GEN-LAST:event_btnAgregarPlaylistActionPerformed
+
+    private void btnPerfilActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPerfilActionPerformed
+        mostrarPanel(panPerfil);
+    }//GEN-LAST:event_btnPerfilActionPerformed
+
+    private void btnVolumenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolumenActionPerformed
+        int valorActual = pgbVolumen.getValue();
+    
+        if (valorActual > 0) {
+            volumenAnterior = valorActual / 100.0;
+            pgbVolumen.setValue(0);
+
+            if (gestorAudio != null) {
+                gestorAudio.setVolumen(0.0);
+            }
+
+            btnVolumen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/muteado-chiquito.png")));
+        } else {
+            int valorRestaurado = (int) (volumenAnterior * 100);
+            pgbVolumen.setValue(valorRestaurado);
+
+            if (gestorAudio != null) {
+                gestorAudio.setVolumen(volumenAnterior);
+            }
+
+            btnVolumen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/volumen-chiquito.png")));
+        }
+    }//GEN-LAST:event_btnVolumenActionPerformed
+
+    private void btnBucleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBucleActionPerformed
+        modoRepetirUna = !modoRepetirUna; // Alternar estado
+    
+        if (modoRepetirUna) {
+            // Activar bucle - Ícono verde
+            btnBucle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/bucle-verde-chiquito.png")));
+            System.out.println("🔁 Modo repetir UNA activado");
+        } else {
+            // Desactivar bucle - Ícono normal
+            btnBucle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/bucle2-chiquito.png")));
+            System.out.println("➡️ Modo normal activado");
+        }
+    }//GEN-LAST:event_btnBucleActionPerformed
 
     /**
      * @param args the command line arguments
@@ -1266,12 +1395,15 @@ public class FrmPrincipal extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAgregarPlaylist;
     private javax.swing.JButton btnAnterior;
+    private javax.swing.JButton btnBucle;
     private javax.swing.JButton btnBuscar;
     private javax.swing.JButton btnCola;
     private javax.swing.JButton btnHistorial;
     private javax.swing.JButton btnHome;
+    private javax.swing.JButton btnPerfil;
     private javax.swing.JButton btnPlayPausar;
     private javax.swing.JButton btnSiguiente;
+    private javax.swing.JButton btnVolumen;
     private javax.swing.JButton btnVolver;
     private javax.swing.JButton jButton11;
     private javax.swing.JPanel jPanel1;
@@ -1289,6 +1421,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private javax.swing.JPanel panFondo;
     private javax.swing.JPanel panListaPlaylists;
     private javax.swing.JProgressBar pgbProgreso;
+    private javax.swing.JProgressBar pgbVolumen;
     private javax.swing.JScrollPane scpColaHistorial;
     private javax.swing.JScrollPane scpPlaylists;
     // End of variables declaration//GEN-END:variables

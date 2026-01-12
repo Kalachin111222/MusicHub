@@ -112,4 +112,10 @@ public class GestorAudio {
         }
     }
     
+    public void setVolumen(double nivelCero_a_Uno) {
+        if (player != null) {
+            player.setVolume(nivelCero_a_Uno);
+        }
+    }
+    
 }
