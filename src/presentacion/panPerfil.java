@@ -18,7 +18,6 @@ import logica.BLLUsuario;
  */
 public class panPerfil extends javax.swing.JPanel {
 
-    Usuario u = CLLUsuario.getInstancia().getUsuario();
     private static final String PLACEHOLDER_DIA = "dd";
     private static final String PLACEHOLDER_AÑO = "aaaa";
     private static final Color COLOR_PLACEHOLDER = new Color(153, 153, 153);
@@ -31,6 +30,8 @@ public class panPerfil extends javax.swing.JPanel {
     public panPerfil(FrmPrincipal parent) {
         this.parent = parent;
         initComponents();
+        configurarPlaceholders();
+         cargarMeses();
         cargarGeneros();   // 1️⃣ primero cargas el combo
         mostrar();
     }
@@ -106,9 +107,9 @@ public class panPerfil extends javax.swing.JPanel {
     cmbGenero.addItem("Género"); // opción por defecto
 
     String[] generos = {
-        "Masculino",
-        "Femenino",
-        "Otro"
+        "masculino",
+        "femenino",
+        "otro"
     };
 
     for (String genero : generos) {
@@ -123,8 +124,11 @@ public class panPerfil extends javax.swing.JPanel {
     txtAño.setText(String.valueOf(fecha.getYear()));
     txtAño.setForeground(COLOR_TEXTO);
 
-    cmbMes.setSelectedIndex(fecha.getMonthValue());
+    int indexMes = fecha.getMonthValue();
+    if (indexMes >= 0 && indexMes < cmbMes.getItemCount()) {
+        cmbMes.setSelectedIndex(indexMes);
     }
+}
 
     
     public void mostrar() {
@@ -546,7 +550,7 @@ public class panPerfil extends javax.swing.JPanel {
     }
     }//GEN-LAST:event_btnEliminarCuentaActionPerformed
 
-
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnActualizarContraseña;
     private javax.swing.JButton btnCerrarCesion;
