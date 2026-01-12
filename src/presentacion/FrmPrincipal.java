@@ -109,16 +109,43 @@ public class FrmPrincipal extends javax.swing.JFrame {
             int idUsuario = logica.BLLUsuario.getUsuarioActual().getId();
             
             String generoFav = logica.BLLHistorialReproduccion.obtenerGeneroFavorito(idUsuario);
-            String generoBusqueda = (generoFav != null) ? generoFav : "Pop"; 
-            
-            java.util.List<entidades.Cancion> listaRecomendadas = 
-                    logica.BLLCancion.listarCancionesPorGeneroNoEscuchadas(idUsuario, generoBusqueda);
-            
-            estructuras.ListaCircularDoble<entidades.Cancion> circularRecomendadas = new estructuras.ListaCircularDoble<>();
-            if (listaRecomendadas != null) {
-                for (entidades.Cancion c : listaRecomendadas) circularRecomendadas.insertar(c);
+
+        String[] generosDisponibles = {"Jazz", "Electrónica", "Metal", "Salsa", "Folk","Rock", "Pop", "Hip Hop", "Reggaetón", };
+        String generoBusqueda = null;
+        java.util.List<entidades.Cancion> listaRecomendadas = null;
+
+        if (generoFav != null) {
+            listaRecomendadas = logica.BLLCancion.listarCancionesPorGeneroNoEscuchadas(idUsuario, generoFav);
+            if (listaRecomendadas != null && !listaRecomendadas.isEmpty()) {
+                generoBusqueda = generoFav;
+                System.out.println("✅ Usando género favorito: " + generoFav);
             }
-            panHome.setListaRecomendadas(circularRecomendadas);
+        }
+
+        if (listaRecomendadas == null || listaRecomendadas.isEmpty()) {
+            java.util.List<String> generosAleatorios = new java.util.ArrayList<>(java.util.Arrays.asList(generosDisponibles));
+            java.util.Collections.shuffle(generosAleatorios);
+
+            for (String genero : generosAleatorios) {
+                listaRecomendadas = logica.BLLCancion.listarCancionesPorGeneroNoEscuchadas(idUsuario, genero);
+                if (listaRecomendadas != null && !listaRecomendadas.isEmpty()) {
+                    generoBusqueda = genero;
+                    System.out.println("🎲 Género alternativo encontrado: " + genero);
+                    break;
+                }
+            }
+        }
+
+        if (listaRecomendadas == null) {
+            listaRecomendadas = new java.util.ArrayList<>();
+            System.out.println("⚠️ No hay canciones sin escuchar en ningún género");
+        }
+
+        estructuras.ListaCircularDoble<entidades.Cancion> circularRecomendadas = new estructuras.ListaCircularDoble<>();
+        if (!listaRecomendadas.isEmpty()) {
+            for (entidades.Cancion c : listaRecomendadas) circularRecomendadas.insertar(c);
+        }
+        panHome.setListaRecomendadas(circularRecomendadas);
 
             java.util.List<entidades.Cancion> listaPopulares = logica.BLLCancion.listarCancionesMasPopulares();
             
@@ -382,6 +409,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
             System.out.println("Agregada a la cola: " + seleccionada.getTitulo());
 
             javax.swing.SwingUtilities.invokeLater(() -> {
+                cargarColaLateral(false);
             });
             return;
         }

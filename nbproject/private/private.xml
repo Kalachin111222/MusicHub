@@ -10,6 +10,11 @@
             <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/presentacion/GestorAudio.java</file>
             <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/presentacion/FrmLogin.java</file>
             <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/presentacion/PruebaAudio.java</file>
+            <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/Logica/BLLCancion.java</file>
+            <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/Logica/BLLArtista.java</file>
+            <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/Logica/BLLAlbum.java</file>
+            <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/presentacion/panHome.java</file>
+            <file>file:/E:/Programacion/Java/EDOO/Proyecto/MusicHub/src/Datos/DALCancion.java</file>
         </group>
     </open-files>
 </project-private>

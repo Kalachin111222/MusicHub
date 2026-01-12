@@ -368,9 +368,10 @@ public static List<Cancion> listarCancionesPorGeneroNoEscuchadas(int usuarioId, 
             c.setGenero(rs.getString("genero"));
             c.setNumeroReproducciones(rs.getInt("numero_reproducciones"));
             c.setUrlAudio(rs.getString("url_audio"));
+            
             Artista ar = new Artista();
-            ar.setId(rs.getInt("artista_id_ref")); // coincide con el SP corregido
-            ar.setNombre(rs.getString("artista_nombre"));
+            ar.setId(rs.getInt("artista_id_ref")); // ✅ CAMBIAR AQUÍ
+            ar.setNombre(rs.getString("artista_nombre")); // ✅ AGREGAR ESTO TAMBIÉN
             c.setArtista(ar);
             
             Album al = new Album();
@@ -394,7 +395,6 @@ public static List<Cancion> listarCancionesPorGeneroNoEscuchadas(int usuarioId, 
 
     return lista;
 }
-
 
 public static String obtenerUrlAudioCancion(int cancionId) {
 
