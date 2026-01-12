@@ -451,16 +451,13 @@ public class FrmPrincipal extends javax.swing.JFrame {
             lblTmpActual.setText(obtenerTiempoFormateado(actual));
             lblDuracion.setText(obtenerTiempoFormateado(total));
 
-            // VALIDACIÓN DE FIN DE CANCIÓN
             if (actual >= total - 0.5 && actual > 0) {
                 System.out.println("Fin de canción detectado.");
 
                 if (modoRepetirUna) {
-                    // MODO BUCLE: Reiniciar la misma canción
                     System.out.println("🔁 Repitiendo canción...");
                     gestorAudio.saltarA(0); // Volver al inicio
                 } else {
-                    // MODO NORMAL: Avanzar a la siguiente
                     btnSiguienteActionPerformed(null);
                 }
             }
@@ -849,7 +846,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
     * Actualiza las estadísticas de panHome si está visible
     */
     private void actualizarEstadisticasHome() {
-        // Solo actualizar si panHome está activo
         if (panelActual instanceof panHome) {
             ((panHome) panelActual).cargarDatosUsuario();
         }
@@ -1279,19 +1275,15 @@ public class FrmPrincipal extends javax.swing.JFrame {
         if (c != null) {
             reproducirCancionActual();
         } else {
-            // No hay más canciones en la cola
             if (gestorAudio != null) gestorAudio.pausar();
-            if (timerProgreso != null) timerProgreso.stop(); // ← DETENER EL TIMER
+            if (timerProgreso != null) timerProgreso.stop();
 
-            // Resetear la barra de progreso
             pgbProgreso.setValue(0);
             lblTmpActual.setText("00:00");
             lblDuracion.setText("00:00");
 
-            // Cambiar ícono a play
             btnPlayPausar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/play.png")));
 
-            // Actualizar cola lateral para mostrar "Cola vacía"
             javax.swing.SwingUtilities.invokeLater(() -> {
                 cargarColaLateral(true);
             });
@@ -1330,7 +1322,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
         int valorActual = pgbVolumen.getValue();
     
         if (valorActual > 0) {
-            // MUTEAR: Guardar volumen actual y poner en 0
             volumenAnterior = valorActual / 100.0;
             pgbVolumen.setValue(0);
 
@@ -1340,7 +1331,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
             btnVolumen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/muteado-chiquito.png")));
         } else {
-            // DESMUTEAR: Restaurar volumen anterior
             int valorRestaurado = (int) (volumenAnterior * 100);
             pgbVolumen.setValue(valorRestaurado);
 
