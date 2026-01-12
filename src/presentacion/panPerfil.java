@@ -23,6 +23,7 @@ public class panPerfil extends javax.swing.JPanel {
     private static final String PLACEHOLDER_AÑO = "aaaa";
     private static final Color COLOR_PLACEHOLDER = new Color(153, 153, 153);
     private static final Color COLOR_TEXTO = new Color(255, 255, 255);
+    private static final Color COLOR_TEXTO2 = new Color(0, 0, 0);
     /**
      * Creates new form panPerfil
      */
@@ -31,16 +32,17 @@ public class panPerfil extends javax.swing.JPanel {
     public panPerfil(FrmPrincipal parent) {
         this.parent = parent;
         initComponents();
-        cargarGeneros();   // 1️⃣ primero cargas el combo
+        cargarGeneros(); 
+        cargarMeses();
         mostrar();
     }
 
     private void cerrarVentana() {
-    Window ventana = SwingUtilities.getWindowAncestor(this);
-    if (ventana != null) {
-        ventana.dispose();
+        Window ventana = SwingUtilities.getWindowAncestor(this);
+        if (ventana != null) {
+            ventana.dispose();
+        }
     }
-}
     
     private void configurarPlaceholders() {
         // Placeholder para día
@@ -52,7 +54,7 @@ public class panPerfil extends javax.swing.JPanel {
             public void focusGained(java.awt.event.FocusEvent e) {
                 if (txtDia.getText().equals(PLACEHOLDER_DIA)) {
                     txtDia.setText("");
-                    txtDia.setForeground(COLOR_TEXTO);
+                    txtDia.setForeground(COLOR_TEXTO2);
                 }
             }
             @Override
@@ -73,7 +75,7 @@ public class panPerfil extends javax.swing.JPanel {
             public void focusGained(java.awt.event.FocusEvent e) {
                 if (txtAño.getText().equals(PLACEHOLDER_AÑO)) {
                     txtAño.setText("");
-                    txtAño.setForeground(COLOR_TEXTO);
+                    txtAño.setForeground(COLOR_TEXTO2);
                 }
             }
             @Override
@@ -118,10 +120,10 @@ public class panPerfil extends javax.swing.JPanel {
 
     private void mostrarFecha(LocalDate fecha) {
     txtDia.setText(String.valueOf(fecha.getDayOfMonth()));
-    txtDia.setForeground(COLOR_TEXTO);
+    txtDia.setForeground(COLOR_TEXTO2);
 
     txtAño.setText(String.valueOf(fecha.getYear()));
-    txtAño.setForeground(COLOR_TEXTO);
+    txtAño.setForeground(COLOR_TEXTO2);
 
     cmbMes.setSelectedIndex(fecha.getMonthValue());
     }
@@ -181,13 +183,11 @@ public class panPerfil extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
         btnActualizarContraseña = new javax.swing.JButton();
         jPasswordField1 = new javax.swing.JPasswordField();
         jPasswordField2 = new javax.swing.JPasswordField();
         jPasswordField3 = new javax.swing.JPasswordField();
-        jPasswordField4 = new javax.swing.JPasswordField();
         btnCerrarCesion = new javax.swing.JButton();
         btnEliminarCuenta = new javax.swing.JButton();
 
@@ -265,7 +265,7 @@ public class panPerfil extends javax.swing.JPanel {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(btnGuardar)
                             .addComponent(jLabel3))))
-                .addContainerGap(133, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -310,10 +310,6 @@ public class panPerfil extends javax.swing.JPanel {
         jLabel10.setForeground(new java.awt.Color(255, 255, 255));
         jLabel10.setText("Nueva Contraseña :");
 
-        jLabel11.setFont(new java.awt.Font("Roboto", 0, 14)); // NOI18N
-        jLabel11.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel11.setText("Género:");
-
         jLabel12.setFont(new java.awt.Font("Roboto", 0, 14)); // NOI18N
         jLabel12.setForeground(new java.awt.Color(255, 255, 255));
         jLabel12.setText("Confirmar Nueva :");
@@ -324,14 +320,6 @@ public class panPerfil extends javax.swing.JPanel {
                 btnActualizarContraseñaActionPerformed(evt);
             }
         });
-
-        jPasswordField1.setText("jPasswordField1");
-
-        jPasswordField2.setText("jPasswordField1");
-
-        jPasswordField3.setText("jPasswordField1");
-
-        jPasswordField4.setText("jPasswordField1");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -344,11 +332,9 @@ public class panPerfil extends javax.swing.JPanel {
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel9)
                             .addComponent(jLabel10)
-                            .addComponent(jLabel12)
-                            .addComponent(jLabel11))
+                            .addComponent(jLabel12))
                         .addGap(58, 58, 58)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPasswordField4, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jPasswordField3, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jPasswordField2, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jPasswordField1, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -357,7 +343,7 @@ public class panPerfil extends javax.swing.JPanel {
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(btnActualizarContraseña)
                             .addComponent(jLabel8))))
-                .addContainerGap(127, Short.MAX_VALUE))
+                .addContainerGap(382, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -376,11 +362,7 @@ public class panPerfil extends javax.swing.JPanel {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel12)
                     .addComponent(jPasswordField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(12, 12, 12)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel11)
-                    .addComponent(jPasswordField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(30, 30, 30)
+                .addGap(64, 64, 64)
                 .addComponent(btnActualizarContraseña)
                 .addContainerGap(46, Short.MAX_VALUE))
         );
@@ -409,17 +391,16 @@ public class panPerfil extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(50, 50, 50)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(btnEliminarCuenta, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(jLabel2)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(btnCerrarCesion, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(38, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnCerrarCesion, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -432,11 +413,11 @@ public class panPerfil extends javax.swing.JPanel {
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(42, 42, 42)
+                .addGap(40, 40, 40)
                 .addComponent(btnCerrarCesion)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnEliminarCuenta)
-                .addContainerGap(96, Short.MAX_VALUE))
+                .addContainerGap(122, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -513,37 +494,48 @@ public class panPerfil extends javax.swing.JPanel {
     private void btnCerrarCesionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCerrarCesionActionPerformed
         // TODO add your handling code here:
         int opcion = JOptionPane.showConfirmDialog(
-        this,
-        "¿Desea cerrar sesión?",
-        "Cerrar sesión",
-        JOptionPane.YES_NO_OPTION,
-        JOptionPane.QUESTION_MESSAGE
-    );
+            this,
+            "¿Desea cerrar sesión?",
+            "Cerrar sesión",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+        );
 
-    if (opcion != JOptionPane.YES_OPTION) {
-        return;
-    }
+        if (opcion != JOptionPane.YES_OPTION) {
+            return;
+        }
 
-    // 1. Cerrar sesión lógica
-    BLLUsuario.cerrarSesion();
+        // 1. Cerrar sesión lógica
+        BLLUsuario.cerrarSesion();
 
-    // 2. Abrir login
-    FrmLogin login = new FrmLogin();
-    login.setVisible(true);
+        // 2. Abrir login
+        FrmLogin login = new FrmLogin();
+        login.setVisible(true);
 
-    // 3. Cerrar ventana actual
-    cerrarVentana();
+        // 3. Cerrar ventana actual
+        cerrarVentana();
     }//GEN-LAST:event_btnCerrarCesionActionPerformed
 
     private void btnEliminarCuentaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarCuentaActionPerformed
-        // TODO add your handling code here:
-       boolean eliminada = BLLUsuario.eliminarCuenta();
+        int opcion = JOptionPane.showConfirmDialog(
+            this,
+            "¿Desea eliminar su cuenta?",
+            "Eliminar Cuenta",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+        );
 
-    if (eliminada) {
-        FrmLogin login = new FrmLogin();
-        login.setVisible(true);
-        cerrarVentana();
-    }
+        if (opcion != JOptionPane.YES_OPTION) {
+            return;
+        }
+        
+        boolean eliminada = BLLUsuario.eliminarCuenta();
+
+        if (eliminada) {
+            FrmLogin login = new FrmLogin();
+            login.setVisible(true);
+            cerrarVentana();
+        }
     }//GEN-LAST:event_btnEliminarCuentaActionPerformed
 
 
@@ -556,7 +548,6 @@ public class panPerfil extends javax.swing.JPanel {
     private javax.swing.JComboBox<String> cmbMes;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -571,7 +562,6 @@ public class panPerfil extends javax.swing.JPanel {
     private javax.swing.JPasswordField jPasswordField1;
     private javax.swing.JPasswordField jPasswordField2;
     private javax.swing.JPasswordField jPasswordField3;
-    private javax.swing.JPasswordField jPasswordField4;
     private javax.swing.JTextField txtAño;
     private javax.swing.JTextField txtDia;
     private javax.swing.JTextField txtEmail;

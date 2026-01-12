@@ -44,7 +44,7 @@ public class panPlaylist extends javax.swing.JPanel {
         btnPlay.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
-    private void cargarDatosPlaylist() {
+    public void cargarDatosPlaylist() {
         if (playlistActual == null) return;
 
         // 1. Configurar textos principales
