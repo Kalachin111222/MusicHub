@@ -259,6 +259,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
                 int idCancion = c.getId();
                 new Thread(() -> {
                     logica.BLLHistorialReproduccion.registrarReproduccion(idUsuario, idCancion);
+                    actualizarEstadisticasHome();
                 }).start();
             }
 
@@ -338,6 +339,47 @@ public class FrmPrincipal extends javax.swing.JFrame {
         reproducirCancionActual(); 
         javax.swing.SwingUtilities.invokeLater(() -> {
             cargarColaLateral(true); 
+        });
+    }
+    
+    public void reproducirListaCompleta(java.util.List<entidades.Cancion> lista, int indiceInicio) {
+        listasDinamicas.CLLReproductor gestor = listasDinamicas.CLLReproductor.getInstancia();
+
+        // Validación
+        if (lista == null || lista.isEmpty()) {
+            System.err.println("Error: Lista vacía.");
+            return;
+        }
+
+        if (indiceInicio < 0 || indiceInicio >= lista.size()) {
+            indiceInicio = 0;
+        }
+
+        entidades.Cancion actual = gestor.getActual();
+
+        if (actual == null) {
+            gestor.setNuevaCola(lista, indiceInicio);
+            System.out.println("✓ Nueva cola creada con " + lista.size() + " canciones");
+
+            reproducirCancionActual();
+
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                cargarColaLateral(true);
+            });
+            return;
+        }
+
+        int agregadas = 0;
+
+        for (entidades.Cancion c : lista) {
+            gestor.insertar(c);
+            agregadas++;
+        }
+
+        System.out.println("✓ Agregadas " + agregadas + " canciones a la cola");
+
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            cargarColaLateral(false);
         });
     }
     
@@ -759,6 +801,16 @@ public class FrmPrincipal extends javax.swing.JFrame {
         panDetalleAlbum panelDetalle = new panDetalleAlbum(this, album, artistaEncontrado);
         
         mostrarPanel(panelDetalle);
+    }
+    
+    /**
+    * Actualiza las estadísticas de panHome si está visible
+    */
+    private void actualizarEstadisticasHome() {
+        // Solo actualizar si panHome está activo
+        if (panelActual instanceof panHome) {
+            ((panHome) panelActual).cargarDatosUsuario();
+        }
     }
     
     /**

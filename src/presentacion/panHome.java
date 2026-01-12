@@ -70,9 +70,16 @@ public class panHome extends javax.swing.JPanel {
 
     }
     
+    // Versión 1: Con reset (para carga inicial)
     public void cargarDatosUsuario() {
-        // 1. Limpieza inicial para evitar mostrar datos del usuario anterior si falla algo
-        resetearEstadisticas();
+        cargarDatosUsuario(true);
+    }
+
+    // Versión 2: Sin reset (para actualizaciones en tiempo real)
+    public void cargarDatosUsuario(boolean mostrarCargando) {
+        if (mostrarCargando) {
+            resetearEstadisticas();
+        }
 
         if (logica.BLLUsuario.hayUsuarioLogueado()) {
             try {

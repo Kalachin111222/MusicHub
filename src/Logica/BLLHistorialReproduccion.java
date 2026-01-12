@@ -116,7 +116,7 @@ public class BLLHistorialReproduccion {
         String generoFavorito = DALHistorialReproduccion.obtenerGeneroFavorito(usuarioId);
         
         if (generoFavorito == null || generoFavorito.trim().isEmpty()) {
-            mostrarAdvertencia("No se pudo determinar el género favorito. Escucha más música.");
+            System.out.println("No se pudo determinar el género favorito. Escucha más música.");
             return null;
         }
         

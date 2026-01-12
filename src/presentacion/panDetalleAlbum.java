@@ -222,7 +222,7 @@ public class panDetalleAlbum extends javax.swing.JPanel {
     
     private void reproducirAlbumCompleto() {
         if (principal != null && listaCanciones != null && !listaCanciones.isEmpty()) {
-            principal.reproducirDesdePanel(listaCanciones, 0);
+            principal.reproducirListaCompleta(listaCanciones, 0);
         }
     }
 
