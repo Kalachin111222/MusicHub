@@ -305,48 +305,48 @@ public static String incrementarReproducciones(int cancionId) {
     return mensaje;
 }
 
-public static List<Cancion> listarCancionesMasPopulares() {
-    List<Cancion> lista = new ArrayList<>();
+    public static List<Cancion> listarCancionesMasPopulares() {
+        List<Cancion> lista = new ArrayList<>();
 
-    try {
-        cn = conexion.realizarconexion();
-        String sql = "{call sp_listar_canciones_mas_populares()}";
-        cs = cn.prepareCall(sql);
-        rs = cs.executeQuery();
-
-        while (rs.next()) {
-            Cancion c = new Cancion();
-            c.setId(rs.getInt("id"));
-            c.setTitulo(rs.getString("titulo"));
-            c.setDuracion(rs.getInt("duracion"));
-            c.setGenero(rs.getString("genero"));
-            c.setNumeroReproducciones(rs.getInt("numero_reproducciones"));
-            c.setUrlAudio(rs.getString("url_audio"));
-            Artista ar = new Artista();
-            ar.setId(rs.getInt("artista_id_ref")); // coincide con el SP corregido
-            ar.setNombre(rs.getString("artista_nombre"));
-            c.setArtista(ar);
-            Album al = new Album();
-            al.setId(rs.getInt("album_id"));
-            c.setAlbum(al);
-
-            lista.add(c);
-        }
-
-    } catch (ClassNotFoundException | SQLException ex) {
-        System.out.println("Error DAL: " + ex.getMessage());
-    } finally {
         try {
-            if (rs != null) rs.close();
-            if (cs != null) cs.close();
-            if (cn != null) cn.close();
-        } catch (SQLException ex) {
-            System.out.println("Error cerrando recursos: " + ex.getMessage());
-        }
-    }
+            cn = conexion.realizarconexion();
+            String sql = "{call sp_listar_canciones_mas_populares()}";
+            cs = cn.prepareCall(sql);
+            rs = cs.executeQuery();
 
-    return lista;
-}
+            while (rs.next()) {
+                Cancion c = new Cancion();
+                c.setId(rs.getInt("id"));
+                c.setTitulo(rs.getString("titulo"));
+                c.setDuracion(rs.getInt("duracion"));
+                c.setGenero(rs.getString("genero"));
+                c.setNumeroReproducciones(rs.getInt("numero_reproducciones"));
+                c.setUrlAudio(rs.getString("url_audio"));
+                Artista ar = new Artista();
+                ar.setId(rs.getInt("artista_id_ref")); // coincide con el SP corregido
+                ar.setNombre(rs.getString("artista_nombre"));
+                c.setArtista(ar);
+                Album al = new Album();
+                al.setId(rs.getInt("album_id"));
+                c.setAlbum(al);
+
+                lista.add(c);
+            }
+
+        } catch (ClassNotFoundException | SQLException ex) {
+            System.out.println("Error DAL: " + ex.getMessage());
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (cs != null) cs.close();
+                if (cn != null) cn.close();
+            } catch (SQLException ex) {
+                System.out.println("Error cerrando recursos: " + ex.getMessage());
+            }
+        }
+
+        return lista;
+    }
 
 
 public static List<Cancion> listarCancionesPorGeneroNoEscuchadas(int usuarioId, String genero) {
@@ -371,6 +371,7 @@ public static List<Cancion> listarCancionesPorGeneroNoEscuchadas(int usuarioId, 
             Artista ar = new Artista();
             ar.setId(rs.getInt("artista_id"));
             c.setArtista(ar);
+            
             Album al = new Album();
             al.setId(rs.getInt("album_id"));
             c.setAlbum(al);

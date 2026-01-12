@@ -37,7 +37,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private panHome panHome;
     private panPlaylist panPlaylist;
     private panArtista panArtista;
-    private panPerfil panPerfil;
+//    private panPerfil panPerfil;
     private static FrmPrincipal instanciaGlobal;
     private java.util.Map<Integer, javax.swing.Icon> cacheColaLateral = new java.util.HashMap<>();
 
@@ -92,7 +92,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         jScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         panHome = new panHome(this);
-        panPerfil = new panPerfil(this);
+//        panPerfil = new panPerfil(this);
 
         configurarUsuarioActual();
 
@@ -313,14 +313,10 @@ public class FrmPrincipal extends javax.swing.JFrame {
         }
 
         entidades.Cancion seleccionada = lista.get(indice);
-
-        // ============================================
-        // DECISIÓN: ¿Crear nueva cola o agregar?
-        // ============================================
-
+        
         entidades.Cancion actual = gestor.getActual();
 
-        if (actual == null || !gestorAudio.estaReproduciendo()) {
+        if (actual == null) {
             // CASO 1: No hay nada sonando → Crear nueva cola
             java.util.List<entidades.Cancion> listaUnica = new java.util.ArrayList<>();
             listaUnica.add(seleccionada);
@@ -328,21 +324,14 @@ public class FrmPrincipal extends javax.swing.JFrame {
             System.out.println("Nueva cola creada: " + seleccionada.getTitulo());
 
         } else {
-            // CASO 2: Ya hay algo sonando → Agregar a la cola
-            // Evitar duplicar la canción que ya está sonando
-            if (seleccionada.getId() != actual.getId()) {
-                gestor.insertar(seleccionada);
-                System.out.println("Agregada a la cola: " + seleccionada.getTitulo());
+            gestor.insertar(seleccionada);
+            System.out.println("Agregada a la cola: " + seleccionada.getTitulo());
 
-                // Actualizar solo la vista de la cola lateral
-                javax.swing.SwingUtilities.invokeLater(() -> {
-                    cargarColaLateral(false); // false = no subir scroll
-                });
-                return; // IMPORTANTE: No reproducir inmediatamente
-            } else {
-                System.out.println("La canción ya está sonando");
-                return;
-            }
+            // Actualizar solo la vista de la cola lateral
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                cargarColaLateral(false); // false = no subir scroll
+            });
+            return; // IMPORTANTE: No reproducir inmediatamente
         }
 
         // Solo llegamos aquí si creamos una nueva cola
@@ -512,6 +501,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
                         if (creado) {
                             configurarUsuarioActual(); 
+                            cargarPlaylistsLateral();
                         }
                     }
                 } else {
@@ -1143,12 +1133,26 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
     private void btnSiguienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSiguienteActionPerformed
         entidades.Cancion c = listasDinamicas.CLLReproductor.getInstancia().obtenerSiguiente();
-    
+
         if (c != null) {
             reproducirCancionActual();
         } else {
+            // No hay más canciones en la cola
             if (gestorAudio != null) gestorAudio.pausar();
+            if (timerProgreso != null) timerProgreso.stop(); // ← DETENER EL TIMER
+
+            // Resetear la barra de progreso
+            pgbProgreso.setValue(0);
+            lblTmpActual.setText("00:00");
+            lblDuracion.setText("00:00");
+
+            // Cambiar ícono a play
             btnPlayPausar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/play.png")));
+
+            // Actualizar cola lateral para mostrar "Cola vacía"
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                cargarColaLateral(true);
+            });
         }
     }//GEN-LAST:event_btnSiguienteActionPerformed
 

@@ -82,7 +82,10 @@ public class CLLReproductor {
     }
 
     public Cancion obtenerSiguiente() {
-        if (pilaSiguientes.isEmpty()) return null;
+        if (pilaSiguientes.isEmpty()) {
+            cancionActual = null; // ← Limpiar cuando no hay más
+            return null;
+        }
         if (cancionActual != null) historial.push(cancionActual);
         cancionActual = pilaSiguientes.pop();
         return cancionActual;
