@@ -89,7 +89,7 @@ public class BLLHistorialReproduccion {
         List<HistorialReproduccion> historial = DALHistorialReproduccion.listarUltimasReproducciones(usuarioId, limite);
         
         if (historial == null || historial.isEmpty()) {
-            mostrarAdvertencia("No hay reproducciones recientes.");
+            System.out.println("No hay reproducciones recientes.");
             return historial;
         }
         

@@ -193,7 +193,7 @@ public class panPerfil extends javax.swing.JPanel {
         btnCerrarCesion = new javax.swing.JButton();
         btnEliminarCuenta = new javax.swing.JButton();
 
-        setBackground(new java.awt.Color(40, 40, 40));
+        setBackground(new java.awt.Color(25, 25, 25));
 
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/usuario2-chiquito.png"))); // NOI18N
 
@@ -201,7 +201,7 @@ public class panPerfil extends javax.swing.JPanel {
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setText("Mi Perfil");
 
-        jPanel1.setBackground(new java.awt.Color(45, 45, 45));
+        jPanel1.setBackground(new java.awt.Color(30, 30, 30));
 
         jLabel3.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
@@ -298,7 +298,7 @@ public class panPerfil extends javax.swing.JPanel {
                 .addContainerGap(58, Short.MAX_VALUE))
         );
 
-        jPanel2.setBackground(new java.awt.Color(45, 45, 45));
+        jPanel2.setBackground(new java.awt.Color(30, 30, 30));
 
         jLabel8.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
         jLabel8.setForeground(new java.awt.Color(255, 255, 255));
