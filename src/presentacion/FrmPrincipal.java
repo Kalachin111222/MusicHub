@@ -259,6 +259,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
                 int idCancion = c.getId();
                 new Thread(() -> {
                     logica.BLLHistorialReproduccion.registrarReproduccion(idUsuario, idCancion);
+                    actualizarEstadisticasHome();
                 }).start();
             }
 
@@ -800,6 +801,16 @@ public class FrmPrincipal extends javax.swing.JFrame {
         panDetalleAlbum panelDetalle = new panDetalleAlbum(this, album, artistaEncontrado);
         
         mostrarPanel(panelDetalle);
+    }
+    
+    /**
+    * Actualiza las estadísticas de panHome si está visible
+    */
+    private void actualizarEstadisticasHome() {
+        // Solo actualizar si panHome está activo
+        if (panelActual instanceof panHome) {
+            ((panHome) panelActual).cargarDatosUsuario();
+        }
     }
     
     /**
