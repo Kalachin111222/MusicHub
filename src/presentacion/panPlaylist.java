@@ -145,10 +145,10 @@ public class panPlaylist extends javax.swing.JPanel {
         panListaCanciones.add(fila);
     }
     
-    private void reproducirAlbumCompleto() {
+    private void reproducirPlaylistCompleta() {
         if (principal != null && listaCanciones != null && !listaCanciones.isEmpty()) {
             // Enviamos la lista completa y empezamos por la canción 0 (la primera)
-            principal.reproducirDesdePanel(listaCanciones, 0);
+            principal.reproducirListaCompleta(listaCanciones, 0);
         }
     }
 
@@ -233,7 +233,7 @@ public class panPlaylist extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnPlayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPlayActionPerformed
-        reproducirAlbumCompleto();
+        reproducirPlaylistCompleta();
     }//GEN-LAST:event_btnPlayActionPerformed
 
 
