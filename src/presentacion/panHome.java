@@ -182,7 +182,6 @@ public class panHome extends javax.swing.JPanel {
     }
 
     private void actualizarRecomendadas() {
-        // 1. Limpieza rápida
         panGrid.removeAll();
 
         // 2. Validación de datos
@@ -192,7 +191,6 @@ public class panHome extends javax.swing.JPanel {
             return;
         }
 
-        // 3. Renderizado de tarjetas visibles
         NodoCircularDoble<Cancion> temp = nodoRecomendadas; 
         for (int i = 0; i < cantidadTarjetasVisibles; i++) {
             if (temp != null) {
@@ -201,8 +199,7 @@ public class panHome extends javax.swing.JPanel {
                 temp = temp.getSgte();
             }
         }
-
-        // 4. Refrescar contenedor
+        
         panGrid.revalidate();
         panGrid.repaint();
     }
