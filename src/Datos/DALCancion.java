@@ -348,7 +348,7 @@ public static List<Cancion> listarCancionesMasPopulares() {
     return lista;
 }
 
-//recomendacion
+// Para recomendacion
 public static List<Cancion> listarCancionesPorGeneroNoEscuchadas(int usuarioId, String genero) {
     List<Cancion> lista = new ArrayList<>();
 
