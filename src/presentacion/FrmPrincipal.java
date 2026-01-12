@@ -40,7 +40,8 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private panPerfil panPerfil;
     private static FrmPrincipal instanciaGlobal;
     private java.util.Map<Integer, javax.swing.Icon> cacheColaLateral = new java.util.HashMap<>();
-    private double volumenAnterior = 0.5; // Guardará el volumen antes de mutear (50% por defecto)
+    private double volumenAnterior = 0.5;
+    private boolean modoRepetirUna = false; 
 
 
     public static FrmPrincipal getInstanciaGlobal() {
@@ -445,22 +446,23 @@ public class FrmPrincipal extends javax.swing.JFrame {
             double actual = gestorAudio.getTiempoActual();
             double total = gestorAudio.getDuracionTotal();
 
-            // 1. Actualización visual de la barra y etiquetas
             pgbProgreso.setMaximum((int) total);
             pgbProgreso.setValue((int) actual);
-
             lblTmpActual.setText(obtenerTiempoFormateado(actual));
             lblDuracion.setText(obtenerTiempoFormateado(total));
 
-            // 2. VALIDACIÓN DE FIN DE CANCIÓN
-            // Comparamos si el tiempo actual llegó al total. 
-            // Usamos -0.5 como margen de seguridad para que el cambio sea fluido.
+            // VALIDACIÓN DE FIN DE CANCIÓN
             if (actual >= total - 0.5 && actual > 0) {
-                System.out.println("Fin de canción detectado. Avanzando...");
+                System.out.println("Fin de canción detectado.");
 
-                // Llamamos al evento del botón siguiente programáticamente.
-                // Pasamos 'null' porque el método no usa el objeto 'evt'.
-                btnSiguienteActionPerformed(null);
+                if (modoRepetirUna) {
+                    // MODO BUCLE: Reiniciar la misma canción
+                    System.out.println("🔁 Repitiendo canción...");
+                    gestorAudio.saltarA(0); // Volver al inicio
+                } else {
+                    // MODO NORMAL: Avanzar a la siguiente
+                    btnSiguienteActionPerformed(null);
+                }
             }
         }
     }
@@ -1351,7 +1353,17 @@ public class FrmPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_btnVolumenActionPerformed
 
     private void btnBucleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBucleActionPerformed
-            
+        modoRepetirUna = !modoRepetirUna; // Alternar estado
+    
+        if (modoRepetirUna) {
+            // Activar bucle - Ícono verde
+            btnBucle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/bucle-verde-chiquito.png")));
+            System.out.println("🔁 Modo repetir UNA activado");
+        } else {
+            // Desactivar bucle - Ícono normal
+            btnBucle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/bucle2-chiquito.png")));
+            System.out.println("➡️ Modo normal activado");
+        }
     }//GEN-LAST:event_btnBucleActionPerformed
 
     /**
